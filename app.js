@@ -39,7 +39,7 @@ let audioCtx = null;
 function calcGoal(g,a){a=parseInt(a)||25;if(a<6)return 1200;if(a<13)return g==="male"?1500:1300;if(a<18)return g==="male"?2200:1800;if(a<60)return g==="male"?2500:2000;return g==="male"?2200:1800}
 
 function getDefaultState(){
-  return{version:2,goal:2000,cupSize:200,sound:"on",remindMode:"smart",remindStart:"08:00",remindEnd:"22:00",today:getToday(),totalMl:0,count:0,logs:[],weekData:{},profile:null,userId:genId(),friends:[]}
+  return{version:3,goal:2000,cupSize:200,sound:"on",praiseMode:"on",remindMode:"smart",remindStart:"08:00",remindEnd:"22:00",today:getToday(),totalMl:0,count:0,logs:[],weekData:{},profile:null,userId:genId(),friends:[]}
 }
 function genId(){return"hlm_"+Math.random().toString(36).substr(2,12)+Date.now().toString(36)}
 function getToday(){return new Date().toISOString().slice(0,10)}
@@ -51,7 +51,7 @@ function loadState(){
       var s=JSON.parse(r);var td=getToday();
       if(s.today!==td){if(s.today)s.weekData[s.today]=(s.weekData[s.today]||0)+s.totalMl;s.today=td;s.totalMl=0;s.count=0;s.logs=[]}
       if(!s.version){s.goal=2000;s.cupSize=200}
-      if(!s.userId)s.userId=genId();if(!s.friends)s.friends=[];if(!s.sound)s.sound="on"
+      if(!s.userId)s.userId=genId();if(!s.friends)s.friends=[];if(!s.sound)s.sound="on";if(s.praiseMode===undefined)s.praiseMode="on"
       if(!s.remindMode)s.remindMode="smart";if(!s.remindStart)s.remindStart="08:00";if(!s.remindEnd)s.remindEnd="22:00"
       return s
     }
@@ -87,7 +87,7 @@ function drink(ml){
   var td=getToday();state.weekData[td]=(state.weekData[td]||0)+ml;
   saveState();render();playGulp();
   var r1=state.totalMl/state.goal;
-  if(r1>=1.2)showMsg(randFrom(MSGS.over));else if(r1>=1)showMsg(randFrom(MSGS.goal));else showMsg(randFrom(MSGS.praise))
+  if(state.praiseMode==="on"){showMsg(randFrom(MSGS.praise))}else{if(r1>=1.2)showMsg(randFrom(MSGS.over));else if(r1>=1)showMsg(randFrom(MSGS.goal));else showMsg(randFrom(MSGS.praise))}
   showToast("💧 +"+ml+"ml")
 }
 
@@ -226,7 +226,7 @@ function showToast(msg){
 function openModal(mode){
   if(mode==="settings"){
     document.getElementById("goalInput").value=state.goal;document.getElementById("cupInput").value=state.cupSize;
-    document.getElementById("soundToggle").value=state.sound||"on";document.getElementById("reminderMode").value=state.remindMode||"smart";
+    document.getElementById("soundToggle").value=state.sound||"on";document.getElementById("praiseToggle").value=state.praiseMode||"on";document.getElementById("reminderMode").value=state.remindMode||"smart";
     document.getElementById("remindStart").value=state.remindStart||"08:00";document.getElementById("remindEnd").value=state.remindEnd||"22:00";
     document.getElementById("modalTitle").textContent="⚙️ 设置";document.getElementById("modalOverlay").classList.add("active")
   }else if(mode==="custom"){
@@ -251,7 +251,7 @@ function closeShareModal(){document.getElementById("shareModalOverlay").classLis
 function saveSettings(){
   state.goal=Math.max(100,Math.min(10000,parseInt(document.getElementById("goalInput").value)||2000));
   state.cupSize=Math.max(50,Math.min(2000,parseInt(document.getElementById("cupInput").value)||200));
-  state.sound=document.getElementById("soundToggle").value;state.remindMode=document.getElementById("reminderMode").value;
+  state.sound=document.getElementById("soundToggle").value;state.praiseMode=document.getElementById("praiseToggle").value;state.remindMode=document.getElementById("reminderMode").value;
   state.remindStart=document.getElementById("remindStart").value||"08:00";state.remindEnd=document.getElementById("remindEnd").value||"22:00";
   saveState();render();startReminder();closeModal();showToast("✅ 保存")
 }
