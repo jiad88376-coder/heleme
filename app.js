@@ -16,13 +16,14 @@ function connectWS(){
       wsConnected = true;
       state.wsConnected = true;
       var p = state.profile || {};
-      ws.send(JSON.stringify({type:"join",userId:state.userId,name:p.name||"匿名",totalMl:state.totalMl,count:state.count}));
+      ws.send(JSON.stringify({type:"join",app:state.mode,userId:state.userId,name:p.name||"匿名",totalMl:state.totalMl,count:state.count}));
       updateWSStatus();
     };
     ws.onmessage = function(e){
       try {
         var msg = JSON.parse(e.data);
         if (msg.type === "leaderboard" && msg.users) {
+          if (msg.app && msg.app !== state.mode) return;
           var myId = state.userId;
           if (msg.users[myId] && msg.users[myId].totalMl > state.totalMl) {
             state.totalMl = msg.users[myId].totalMl;
@@ -42,7 +43,7 @@ function connectWS(){
                 if (msg.type === "checkNameResult" && msg.available === false) {
           showToast("该昵称已被他人使用，请换一个");
         }
-        if (msg.type === "dailyReset") {
+        if (msg.type === "dailyReset" && msg.app === state.mode) {
           var today = getToday();
           state.today = today;
           state.totalMl = 0;
@@ -77,7 +78,8 @@ function updateWSStatus(){
 function sendDrinkUpdate(){
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
   var p = state.profile || {};
-  ws.send(JSON.stringify({type:"drink",userId:state.userId,name:p.name||"匿名",totalMl:state.totalMl,count:state.count}));
+  var drinkType = state.mode === "workout" ? "workout" : "drink";
+  ws.send(JSON.stringify({type:drinkType,userId:state.userId,name:p.name||"匿名",totalMin:state.totalMl,sessions:state.count}));
 }
 
 const MSGS = {
@@ -118,7 +120,7 @@ let audioCtx = null;
 function calcGoal(g,a){a=parseInt(a)||25;if(a<6)return 1200;if(a<13)return g==="male"?1500:1300;if(a<18)return g==="male"?2200:1800;if(a<60)return g==="male"?2500:2000;return g==="male"?2200:1800}
 
 function getDefaultState(){
-  return{version:3,goal:2000,cupSize:200,sound:"on",praiseMode:"on",remindMode:"smart",remindStart:"08:00",remindEnd:"22:00",today:getToday(),totalMl:0,count:0,logs:[],weekData:{},profile:null,userId:genId(),wsConnected:false}
+  return{version:4,mode:"water",goal:2000,cupSize:200,sessionMin:15,sound:"on",praiseMode:"on",remindMode:"smart",remindStart:"08:00",remindEnd:"22:00",today:getToday(),totalMl:0,count:0,logs:[],weekData:{},profile:null,userId:genId(),wsConnected:false}
 }
 function genId(){return"hlm_"+Math.random().toString(36).substr(2,12)+Date.now().toString(36)}
 function getToday(){return new Date().toISOString().slice(0,10)}
@@ -170,12 +172,41 @@ function drink(ml){
   showToast("💧 +"+ml+"ml")
 }
 
+function switchMode(mode){
+  state.mode = mode;
+  saveState();
+  document.querySelectorAll(".mode-tab").forEach(function(t){t.classList.remove("active")});
+  document.getElementById(mode === "water" ? "modeWater" : "modeWorkout").classList.add("active");
+  document.querySelectorAll(".mode-water, .mode-workout").forEach(function(el){el.classList.toggle("active", el.classList.contains("mode-"+mode))});
+  var t = document.getElementById("appTitle");
+  var s = document.getElementById("appSubtitle");
+  if (mode === "water") {
+    t.textContent = "喝了么";
+    s.innerHTML = "今天你喝水了吗？💧";
+    state.goal = state.goal || 2000;
+  } else {
+    t.textContent = "撸了么";
+    s.innerHTML = "今天你撸铁了吗？💪";
+    state.goal = state.goal > 200 ? state.goal : 45;
+    if (!state.sessionMin) state.sessionMin = 15;
+  }
+  render();
+  // Re-send join with correct app
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    var p = state.profile || {};
+    ws.send(JSON.stringify({type:"join",app:mode,userId:state.userId,name:p.name||"匿名",totalMl:state.totalMl,count:state.count}));
+  }
+}
+
 function render(){
   var t=state.totalMl,g=state.goal,r=Math.min(t/g,1);
-  document.getElementById("todayTotal").textContent=t;
-  document.getElementById("todayCount").textContent=state.count;
+  var totalEl = document.getElementById("todayTotal");
+  if (totalEl) totalEl.textContent=t;
+  var countEl = document.getElementById("todayCount");
+  if (countEl) countEl.textContent=state.count;
   document.getElementById("goalDisplay").textContent=g;
-  document.getElementById("waterFill").style.height=(r*100)+"%";
+  var fillEl = state.mode === "workout" ? document.getElementById("gymFill") : document.getElementById("waterFill");
+  if (fillEl) fillEl.style.height=(r*100)+"%";
   document.getElementById("progressText").textContent=t+" / "+g+" ml";
   var fill=document.getElementById("progressFill");fill.style.width=Math.round(r*100)+"%";
   fill.classList.toggle("fire",t>0&&t<g*0.3);
@@ -347,7 +378,7 @@ function openModal(mode){
     document.getElementById("remindStart").value=state.remindStart||"08:00";document.getElementById("remindEnd").value=state.remindEnd||"22:00";
     document.getElementById("modalTitle").textContent="⚙️ 设置";document.getElementById("modalOverlay").classList.add("active")
   }else if(mode==="custom"){
-    document.getElementById("customAmount").value=state.cupSize;document.getElementById("customModalOverlay").classList.add("active");
+    document.getElementById("customAmount").value=state.mode==="workout"?state.sessionMin:state.cupSize;document.getElementById("customModalOverlay").classList.add("active");
     setTimeout(function(){document.getElementById("customAmount").focus()},100)
   }else if(mode==="profile"){
     var p=state.profile||{};document.getElementById("profileNameInput").value=p.name||"";
@@ -364,7 +395,9 @@ function closeProfileModal(){document.getElementById("profileModalOverlay").clas
 
 function saveSettings(){
   state.goal=Math.max(100,Math.min(10000,parseInt(document.getElementById("goalInput").value)||2000));
-  state.cupSize=Math.max(50,Math.min(2000,parseInt(document.getElementById("cupInput").value)||200));
+  var sizeVal = parseInt(document.getElementById("cupInput").value)||200;
+  state.cupSize=Math.max(50,Math.min(2000,sizeVal));
+  state.sessionMin=Math.max(5,Math.min(120,sizeVal));
   state.sound=document.getElementById("soundToggle").value;state.praiseMode=document.getElementById("praiseToggle").value;state.remindMode=document.getElementById("reminderMode").value;
   state.remindStart=document.getElementById("remindStart").value||"08:00";state.remindEnd=document.getElementById("remindEnd").value||"22:00";
   saveState();render();startReminder();closeModal();showToast("? 保存")
@@ -375,14 +408,17 @@ function saveProfile(){
   var gl=calcGoal(g,a);state.profile={name:n,gender:g,age:a};state.goal=gl;saveState();render();closeProfileModal();showToast("? 目标："+gl+"ml")
 }
 
-function confirmCustomDrink(){var ml=parseInt(document.getElementById("customAmount").value)||0;if(ml<=0){showToast("? 无效数量");return}closeCustomModal();drink(ml)}
+function confirmCustomDrink(){var v=parseInt(document.getElementById("customAmount").value)||0;if(v<=0){showToast("? 无效数量");return}closeCustomModal();drink(v)}
 
 function shareApp(){
   var p = state.profile || {};
   var name = p.name || "朋友";
   var preview = document.getElementById("sharePreview");
   if (preview) {
-    preview.innerHTML = "💧 喝了么 - 今天你喝水了吗？<br><span style=font-size:.7rem;color:rgba(100,200,255,.4)>" + name + " 邀你一起喝水▗点开看看排行榜</span>";
+    var shareTitle = state.mode === "workout" ? "💪 撸了么 - 今天你撸铁了吗？" : "💧 喝了么 - 今天你喝水了吗？";
+  var shareAction = state.mode === "workout" ? "邀你一起撸铁" : "邀你一起喝水";
+  var shareLB = state.mode === "workout" ? "点开看看撸铁榜" : "点开看看排行榜";
+  preview.innerHTML = shareTitle + "<br><span style=font-size:.7rem;color:rgba(100,200,255,.4)>" + name + " " + shareAction + "▗" + shareLB + "</span>";;
   }
   document.getElementById("shareModalOverlay").classList.add("active")
 }
@@ -422,7 +458,7 @@ function init(){
   var bg=document.getElementById("waterBg");
   for(var i=0;i<15;i++){var b=document.createElement("div");b.className="bubble";var s=10+Math.random()*30;b.style.width=s+"px";b.style.height=s+"px";b.style.left=Math.random()*100+"%";b.style.animationDuration=(8+Math.random()*12)+"s";b.style.animationDelay=(Math.random()*10)+"s";bg.appendChild(b)}
   connectWS();
-  render();
+  switchMode(state.mode || "water");
   if(!state.profile){showMsg({e:"💧",t:"完成引导设置开始喝水 <span class=hl>☝️</span>"})}else{setTimeout(function(){if(state.totalMl<state.goal)showMsg(randFrom(MSGS.remind))},1500);startReminder()}
 }
 
