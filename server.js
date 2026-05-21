@@ -185,6 +185,14 @@ wss.on("connection", function(ws) {
             }
 
             // === Manual reset ===
+            if (msg.type === "clearAll") {
+                data = { water: { currentDate: "", users: {} }, workout: { currentDate: "", users: {} } };
+                saveData();
+                ["water", "workout"].forEach(function(a) { broadcast(a); });
+                console.log("All user data cleared!");
+                return;
+            }
+
             if (msg.type === "resetDaily") {
                 var a = msg.app || "water";
                 var ds = data[a] || data.water;
