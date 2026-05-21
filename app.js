@@ -1,5 +1,5 @@
-﻿const APP_URL = "https://jiad88376-coder.github.io/heleme/";
-const WS_URL = "wss://xxx.ngrok.io"; // TODO: 替换为你的 ngrok 地址
+﻿const APP_URL = location.href;
+const WS_PROTO = location.protocol === "https:" ? "wss:" : "ws:"; const WS_URL = WS_PROTO + "//" + location.host;
 const LS_KEY = "heleme_v2";
 
 // WebSocket
@@ -61,32 +61,32 @@ function sendDrinkUpdate(){
 
 const MSGS = {
   remind:[
-    {e:"💀",t:"不喝水？想变成 <span class=hl>木乃伊</span>？"},
-    {e:"🫀",t:"<span class=hl>肾</span> 在哭泣……"},
-    {e:"🏜️",t:"再不喝水身体要 <span class=hl>回收水分</span> 了"},
-    {e:"🧟",t:"<span class=hl>脱水边缘</span>……喝杯水还能抢救"},
-    {e:"🪦",t:"离 <span class=hl>渴死</span> 还有多远？"},
-    {e:"🌵",t:"比 <span class=hl>仙人掌</span> 还耐旱？仙人掌也喝水！"},
-    {e:"⚰️",t:"<span class=hl>棺材板</span> 在振动：喝……水……"},
-    {e:"😵",t:"大脑：<span class=hl>-30%</span> 原因：缺水"},
-    {e:"👻",t:"再不喝水 <span class=hl>灵魂</span> 要飘走"},
-    {e:"🔥",t:"喉咙在 <span class=hl>冒烟</span> 听到了吗？"},
-    {e:"😈",t:"<span class=hl>喝了么？</span> 没喝？死亡倒计时又近了"},
-    {e:"🧊",t:"水都 <span class=hl>等急了</span>"},
-    {e:"🤖",t:"机体 <span class=hl>含水量不足</span>，进入休眠模式"},
-    {e:"⏰",t:"<span class=hl>叮！</span> 喝水时间到！"},
+    {e:"💧",t:"不喝水？想变成 <span class=hl>木乃伊</span>？"},
+    {e:"💧",t:"<span class=hl>肾</span> 在哭泣……"},
+    {e:"🥵",t:"再不喝水身体要 <span class=hl>回收水分</span> 了"},
+    {e:"💧",t:"<span class=hl>脱水边缘</span>……喝杯水还能抢救"},
+    {e:"💧",t:"离 <span class=hl>渴死</span> 还有多远？"},
+    {e:"💧",t:"比 <span class=hl>仙人掌</span> 还耐旱？仙人掌也喝水！"},
+    {e:"💧",t:"<span class=hl>棺材板</span> 在振动：喝……水……"},
+    {e:"💧",t:"大脑：<span class=hl>-30%</span> 原因：缺水"},
+    {e:"💧",t:"再不喝水 <span class=hl>灵魂</span> 要飘走"},
+    {e:"💧",t:"喉咙在 <span class=hl>冒烟</span> 听到了吗？"},
+    {e:"💧",t:"<span class=hl>喝了么？</span> 没喝？死亡倒计时又近了"},
+    {e:"💧",t:"水都 <span class=hl>等急了</span>"},
+    {e:"💧",t:"机体 <span class=hl>含水量不足</span>，进入休眠模式"},
+    {e:"?",t:"<span class=hl>叮！</span> 喝水时间到！"},
   ],
   praise:[
-    {e:"💪",t:"离 <span class=hl>健康活到老</span> 又近一步！"},
-    {e:"🌟",t:"超过 <span class=hl>99%</span> 的人！"},
-    {e:"🐟",t:"像条 <span class=hl>快乐的小鱼</span>"},
-    {e:"🏆",t:"<span class=hl>身体含水量</span> 恢复正常！"},
-    {e:"🎉",t:"<span class=hl>死亡倒计时</span> 又推迟了！"},
-    {e:"🧠",t:"大脑得到 <span class=hl>滋润</span>，智商+10"},
-    {e:"✨",t:"细胞们在 <span class=hl>欢呼</span>！"},
+    {e:"💧",t:"离 <span class=hl>健康活到老</span> 又近一步！"},
+    {e:"💧",t:"超过 <span class=hl>99%</span> 的人！"},
+    {e:"💧",t:"像条 <span class=hl>快乐的小鱼</span>"},
+    {e:"💧",t:"<span class=hl>身体含水量</span> 恢复正常！"},
+    {e:"💧",t:"<span class=hl>死亡倒计时</span> 又推迟了！"},
+    {e:"💧",t:"大脑得到 <span class=hl>滋润</span>，智商+10"},
+    {e:"?",t:"细胞们在 <span class=hl>欢呼</span>！"},
   ],
-  goal:[{e:"🎊",t:"<span class=hl>今日目标达成！</span> 没被渴死！"},{e:"👑",t:"<span class=hl>喝水之王！</span>"}],
-  over:[{e:"💦",t:"别 <span class=hl>灌成水母</span>"},{e:"🚽",t:"小心 <span class=hl>住厕所</span>"}]
+  goal:[{e:"💧",t:"<span class=hl>今日目标达成！</span> 没被渴死！"},{e:"💧",t:"<span class=hl>喝水之王！</span>"}],
+  over:[{e:"💧",t:"别 <span class=hl>灌成水母</span>"},{e:"💧",t:"小心 <span class=hl>住厕所</span>"}]
 };
 
 let state = loadState();
@@ -139,7 +139,7 @@ function playGulp(){
 
 function drink(ml){
   if(!ml||ml<=0)return;
-  if(snoozeUntil&&Date.now()<snoozeUntil){showToast("⏰ 提醒暂停中");return}
+  if(snoozeUntil&&Date.now()<snoozeUntil){showToast("? 提醒暂停中");return}
   state.totalMl+=ml;state.count++;
   state.logs.push({time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}),ml:ml});
   var td=getToday();state.weekData[td]=(state.weekData[td]||0)+ml;
@@ -167,7 +167,7 @@ function renderHistory(){
   var el=document.getElementById("historyList");
   if(!state.logs.length){el.innerHTML="<div class=history-empty>还没有喝水记录</div>";return}
   el.innerHTML=state.logs.slice().reverse().map(function(l){
-    var e=l.ml>=500?"🥤":(l.ml>=300?"🧋":"💧");
+    var e=l.ml>=500?"🍺":(l.ml>=300?"🥤":"💧");
     return"<div class=history-item><span class=hi-time>"+l.time+"</span><span>"+e+"</span><span class=hi-amount>+"+l.ml+"ml</span></div>"
   }).join("")
 }
@@ -185,8 +185,8 @@ function renderChart(){
 
 function renderProfile(){
   var p=state.profile;
-  if(!p){document.getElementById("profileEmoji").textContent="🧑";document.getElementById("profileName").textContent="未设置";return}
-  document.getElementById("profileEmoji").textContent=p.gender==="male"?"👨":"👩";
+  if(!p){document.getElementById("profileEmoji").textContent="👤";document.getElementById("profileName").textContent="未设置";return}
+  document.getElementById("profileEmoji").textContent=p.gender==="male"?"👨":"💧";
   document.getElementById("profileName").textContent=p.name||(p.gender==="male"?"男士":"女士")
 }
 
@@ -242,7 +242,7 @@ function saveOnboard(){
   var g=document.getElementById("onboardGender").value,a=parseInt(document.getElementById("onboardAge").value)||25,n=document.getElementById("onboardName").value.trim()||(g==="male"?"水友♂":"水友♀");
   var gl=calcGoal(g,a);state.profile={name:n,gender:g,age:a};state.goal=gl;saveState();render();
   document.getElementById("onboardOverlay").classList.remove("active");
-  showToast("🚀 "+n+"，目标："+gl+"ml");startReminder()
+  showToast("✅ "+n+"，目标："+gl+"ml");startReminder()
 }
 
 document.addEventListener("DOMContentLoaded",function(){
@@ -289,8 +289,8 @@ function scheduleNext(){
   },interval)
 }
 
-function snooze(){snoozeUntil=Date.now()+15*60*1000;document.getElementById("snoozeBar").classList.add("show");startSnoozeCD();showToast("⏰ 暂停15分钟")}
-function cancelSnooze(){snoozeUntil=null;document.getElementById("snoozeBar").classList.remove("show");showToast("🔔 恢复")}
+function snooze(){snoozeUntil=Date.now()+15*60*1000;document.getElementById("snoozeBar").classList.add("show");startSnoozeCD();showToast("? 暂停15分钟")}
+function cancelSnooze(){snoozeUntil=null;document.getElementById("snoozeBar").classList.remove("show");showToast("✅ 恢复")}
 
 var snoozeTimer=null;
 function startSnoozeCD(){
@@ -337,15 +337,15 @@ function saveSettings(){
   state.cupSize=Math.max(50,Math.min(2000,parseInt(document.getElementById("cupInput").value)||200));
   state.sound=document.getElementById("soundToggle").value;state.praiseMode=document.getElementById("praiseToggle").value;state.remindMode=document.getElementById("reminderMode").value;
   state.remindStart=document.getElementById("remindStart").value||"08:00";state.remindEnd=document.getElementById("remindEnd").value||"22:00";
-  saveState();render();startReminder();closeModal();showToast("✅ 保存")
+  saveState();render();startReminder();closeModal();showToast("? 保存")
 }
 
 function saveProfile(){
   var n=document.getElementById("profileNameInput").value.trim()||"水友",g=document.getElementById("profileGenderInput").value,a=parseInt(document.getElementById("profileAgeInput").value)||25;
-  var gl=calcGoal(g,a);state.profile={name:n,gender:g,age:a};state.goal=gl;saveState();render();closeProfileModal();showToast("✅ 目标："+gl+"ml")
+  var gl=calcGoal(g,a);state.profile={name:n,gender:g,age:a};state.goal=gl;saveState();render();closeProfileModal();showToast("? 目标："+gl+"ml")
 }
 
-function confirmCustomDrink(){var ml=parseInt(document.getElementById("customAmount").value)||0;if(ml<=0){showToast("❌ 无效数量");return}closeCustomModal();drink(ml)}
+function confirmCustomDrink(){var ml=parseInt(document.getElementById("customAmount").value)||0;if(ml<=0){showToast("? 无效数量");return}closeCustomModal();drink(ml)}
 
 
 
@@ -391,7 +391,7 @@ function init(){
   for(var i=0;i<15;i++){var b=document.createElement("div");b.className="bubble";var s=10+Math.random()*30;b.style.width=s+"px";b.style.height=s+"px";b.style.left=Math.random()*100+"%";b.style.animationDuration=(8+Math.random()*12)+"s";b.style.animationDelay=(Math.random()*10)+"s";bg.appendChild(b)}
   connectWS();
   render();
-  if(!state.profile){showMsg({e:"👋",t:"完成引导设置开始喝水 <span class=hl>☝️</span>"})}else{setTimeout(function(){if(state.totalMl<state.goal)showMsg(randFrom(MSGS.remind))},1500);startReminder()}
+  if(!state.profile){showMsg({e:"💧",t:"完成引导设置开始喝水 <span class=hl>☝️</span>"})}else{setTimeout(function(){if(state.totalMl<state.goal)showMsg(randFrom(MSGS.remind))},1500);startReminder()}
 }
 
 init();

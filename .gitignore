@@ -1,4 +1,4 @@
-﻿leaderboard.json
+﻿node_modules/
+leaderboard.json
+.env
 *.log
-node_modules/
-package-lock.json
