@@ -39,8 +39,18 @@ function connectWS(){
             saveState();
           }
         }
-        if (msg.type === "checkNameResult" && msg.available === false) {
+                if (msg.type === "checkNameResult" && msg.available === false) {
           showToast("该昵称已被他人使用，请换一个");
+        }
+        if (msg.type === "dailyReset") {
+          var today = getToday();
+          state.today = today;
+          state.totalMl = 0;
+          state.count = 0;
+          state.logs = [];
+          saveState();
+          render();
+          showToast("🔄 新的一天，排行榜已重置");
         }
       } catch(e) {}
     };

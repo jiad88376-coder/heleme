@@ -7,7 +7,7 @@ const PORT = parseInt(process.env.PORT || "3456");
 const DATA_FILE = path.join(__dirname, "leaderboard.json");
 
 // Load persisted data
-let data = { users: {} };
+let data = { currentDate: getToday(), users: {} };
 try {
     const raw = fs.readFileSync(DATA_FILE, "utf-8");
     data = JSON.parse(raw);
@@ -21,6 +21,36 @@ function saveData() {
         fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     } catch (e) {
         console.error("Save error:", e.message);
+    }
+}
+
+
+// === Daily reset: auto-reset at midnight (UTC+8) ===
+function getToday() {
+    var d = new Date();
+    var offset = 8 * 60;
+    var local = new Date(d.getTime() + offset * 60 * 1000);
+    return local.toISOString().slice(0, 10);
+}
+
+function checkDailyReset() {
+    var today = getToday();
+    if (data.currentDate !== today) {
+        console.log("Daily reset: " + (data.currentDate || "initial") + " -> " + today);
+        data.currentDate = today;
+        Object.keys(data.users).forEach(function(uid) {
+            data.users[uid].totalMl = 0;
+            data.users[uid].count = 0;
+            data.users[uid].lastSeen = Date.now();
+        });
+        saveData();
+        var payload = JSON.stringify({ type: "dailyReset", date: today });
+        wss.clients.forEach(function(client) {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(payload);
+            }
+        });
+        console.log("Leaderboard reset for new day:", today);
     }
 }
 
@@ -79,7 +109,7 @@ setInterval(function() {
 }, 5 * 60 * 1000);
 
 function broadcast() {
-    const payload = JSON.stringify({ type: "leaderboard", users: data.users });
+    const payload = JSON.stringify({ type: "leaderboard", users: data.users, date: data.currentDate });
     wss.clients.forEach(function(client) {
         if (client.readyState === WebSocket.OPEN) {
             client.send(payload);
@@ -91,14 +121,15 @@ wss.on("connection", function(ws, req) {
     const ip = req.socket.remoteAddress;
     console.log("Client connected:", ip);
 
-    // Send current data immediately
-    ws.send(JSON.stringify({ type: "leaderboard", users: data.users }));
+    checkDailyReset();
+    ws.send(JSON.stringify({ type: "leaderboard", users: data.users, date: data.currentDate }));
 
     ws.on("message", function(raw) {
         try {
             const msg = JSON.parse(raw);
 
             if (msg.type === "drink" && msg.userId) {
+                checkDailyReset();
                 var user = data.users[msg.userId];
                 if (!user) {
                     user = { name: msg.name || "\u533F\u540D", totalMl: 0, count: 0, lastSeen: Date.now() };
@@ -115,6 +146,7 @@ wss.on("connection", function(ws, req) {
             }
 
             if (msg.type === "join" && msg.userId) {
+                checkDailyReset();
                 var user = data.users[msg.userId];
                 if (!user) {
                     user = { name: msg.name || "\u533F\u540D", totalMl: msg.totalMl || 0, count: msg.count || 0, lastSeen: Date.now() };
@@ -141,6 +173,12 @@ wss.on("connection", function(ws, req) {
                     });
                 }
                 ws.send(JSON.stringify({ type: "checkNameResult", name: msg.name, available: !taken }));
+            }
+
+            if (msg.type === "resetDaily") {
+                data.currentDate = "";
+                checkDailyReset();
+                console.log("Manual daily reset triggered");
             }
 
             if (msg.type === "ping") {
