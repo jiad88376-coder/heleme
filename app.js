@@ -91,11 +91,13 @@ function logWorkout(minutes){
   if (!state.workoutWeekData) state.workoutWeekData = {};
   state.workoutWeekData[td]=(state.workoutWeekData[td]||0)+minutes;
   state.workoutToday=td;
-  saveState();render();
-  document.getElementById("workoutStats").style.display="flex";
-  document.getElementById("workoutProgress").style.display="block";
-  document.getElementById("workoutPicker").style.display="none";
-  document.getElementById("btnStartWorkout").style.display="block";
+  // Show stats BEFORE render
+  var _ws=document.getElementById("workoutStats");if(_ws)_ws.style.display="flex";
+  var _wp=document.getElementById("workoutProgress");if(_wp)_wp.style.display="block";
+  var _pk=document.getElementById("workoutPicker");if(_pk)_pk.style.display="none";
+  var _bt=document.getElementById("btnStartWorkout");if(_bt)_bt.style.display="block";
+  saveState();
+  try{render()}catch(e){console.error('render:',e)}
   showToast("💪 +"+minutes+"分钟");
   showMsg(randFrom(MSGS.praise));
   if (ws && ws.readyState === WebSocket.OPEN) {
@@ -232,8 +234,8 @@ function switchMode(mode){
     var prog = document.getElementById("workoutProgress");
     if (btn) btn.style.display = "block";
     if (picker) picker.style.display = "none";
-    if (stats && state.workoutTotal > 0) stats.style.display = "flex";
-    if (prog && state.workoutTotal > 0) prog.style.display = "block";
+    if (stats) stats.style.display = "flex";
+    if (prog) prog.style.display = "block";
   }
   render();
   // Re-send join with correct app
@@ -265,16 +267,18 @@ function renderWater(){
 }
 
 function renderWorkout(){
-  var t=state.workoutTotal||0,g=state.workoutGoal||45;
-  document.getElementById("workoutTotal").textContent=Math.round(t*10)/10;
-  document.getElementById("workoutSessions").textContent=state.workoutSessions||0;
-  var fillEl = document.getElementById("gymFill");
-  if (fillEl) fillEl.style.height=(g>0?Math.min(Math.round(t/g*100),100):0)+"%";
-  var gl = document.getElementById("gymLabel");
-  if (gl) gl.textContent=Math.round(t*10)/10+"′";
-  document.getElementById("workoutProgressFill").style.width=(g>0?Math.min(Math.round(t/g*100),100):0)+"%";
-  document.getElementById("workoutProgressText").textContent=Math.round(t*10)/10+" / "+g+" 分钟";
-  renderLB();
+  try{
+    var t=state.workoutTotal||0,g=state.workoutGoal||45;
+    var _wt=document.getElementById("workoutTotal");if(_wt)_wt.textContent=Math.round(t*10)/10;
+    var _ws=document.getElementById("workoutSessions");if(_ws)_ws.textContent=state.workoutSessions||0;
+    var fillEl = document.getElementById("gymFill");
+    if (fillEl) fillEl.style.height=(g>0?Math.min(Math.round(t/g*100),100):0)+"%";
+    var gl = document.getElementById("gymLabel");
+    if (gl) gl.textContent=Math.round(t*10)/10+"′";
+    var _pf=document.getElementById("workoutProgressFill");if(_pf)_pf.style.width=(g>0?Math.min(Math.round(t/g*100),100):0)+"%";
+    var _pt=document.getElementById("workoutProgressText");if(_pt)_pt.textContent=Math.round(t*10)/10+" / "+g+" 分钟";
+    renderLB();
+  }catch(e){console.error('renderWorkout:',e)}
 }
 function renderHistory(){
   var el=document.getElementById("historyList");

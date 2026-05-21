@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="zh-CN">
 
@@ -8,7 +8,7 @@
 
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 
-<title>喝了么 - 你今天喝了吗？</title>
+<title>鍠濅簡涔?- 浣犱粖澶╁枬浜嗗悧锛?/title>
 
 <style>
 
@@ -240,15 +240,15 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="header">
 <div class="mode-tabs">
-<span class="mode-tab active" id="modeWater" onclick="switchMode('water')">💧 喝了么</span>
-<span class="mode-tab" id="modeWorkout" onclick="switchMode('workout')">💪 撸了么</span>
+<span class="mode-tab active" id="modeWater" onclick="switchMode('water')">馃挧 鍠濅簡涔?/span>
+<span class="mode-tab" id="modeWorkout" onclick="switchMode('workout')">馃挭 鎾镐簡涔?/span>
 </div>
 
-<h1 id="appTitle">喝了么</h1>
+<h1 id="appTitle">鍠濅簡涔?/h1>
 
-<div class="subtitle" id="appSubtitle">—— 你今天喝了吗？</div>
+<div class="subtitle" id="appSubtitle">鈥斺€?浣犱粖澶╁枬浜嗗悧锛?/div>
 
-<div class="profile-badge" id="profileBadge" onclick="openModal(&apos;profile&apos;)"><span id="profileEmoji">👋</span> <span id="profileName">未设置</span></div>
+<div class="profile-badge" id="profileBadge" onclick="openModal(&apos;profile&apos;)"><span id="profileEmoji">馃憢</span> <span id="profileName">鏈缃?/span></div>
 
 </div>
 
@@ -258,7 +258,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="water-fill" id="waterFill"></div>
 
-<div class="glass-label" id="glassLabel">👋</div>
+<div class="glass-label" id="glassLabel">馃憢</div>
 
 </div>
 
@@ -269,54 +269,54 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 <div class="gym-container" style="display:flex;justify-content:center;margin:16px 0">
 <div class="gym-ring" style="width:120px;height:200px;border:4px solid rgba(255,150,50,.5);border-top:none;border-radius:0 0 20px 20px;position:relative;background:rgba(80,20,0,.2);overflow:hidden;box-shadow:0 0 30px rgba(255,100,0,.15),inset 0 0 20px rgba(180,60,0,.1)">
 <div class="gym-fill" id="gymFill" style="position:absolute;bottom:0;left:0;right:0;height:0%;background:linear-gradient(180deg,rgba(255,150,0,.6),rgba(200,80,0,.8));transition:height 1s cubic-bezier(.4,0,.2,1);border-radius:0 0 16px 16px"></div>
-<div class="gym-label" id="gymLabel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.8rem;font-weight:700;color:rgba(255,255,255,.3);pointer-events:none;z-index:2">💪</div>
+<div class="gym-label" id="gymLabel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.8rem;font-weight:700;color:rgba(255,255,255,.3);pointer-events:none;z-index:2">馃挭</div>
 </div>
 </div>
 
 <!-- Stats (hidden initially, shown after first workout) -->
 <div class="stats" id="workoutStats" style="display:none;gap:10px;margin:16px 0">
-<div class="stat-card"><div class="num" id="workoutTotal">0</div><div class="label">今日训练(分钟)</div></div>
-<div class="stat-card"><div class="num" id="workoutSessions">0</div><div class="label">训练次数</div></div>
+<div class="stat-card"><div class="num" id="workoutTotal">0</div><div class="label">浠婃棩璁粌(鍒嗛挓)</div></div>
+<div class="stat-card"><div class="num" id="workoutSessions">0</div><div class="label">璁粌娆℃暟</div></div>
 </div>
 
-<!-- 立即开撸 button -->
-<button id="btnStartWorkout" onclick="showWorkoutPicker()" style="width:100%;padding:16px 0;border:none;border-radius:16px;font-size:1.2rem;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#cc5500,#ff6a00);color:#fff;box-shadow:0 4px 20px rgba(255,100,0,.4);letter-spacing:4px;transition:all .2s">💪 立即开撸</button>
+<!-- 绔嬪嵆寮€鎾?button -->
+<button id="btnStartWorkout" onclick="showWorkoutPicker()" style="width:100%;padding:16px 0;border:none;border-radius:16px;font-size:1.2rem;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#cc5500,#ff6a00);color:#fff;box-shadow:0 4px 20px rgba(255,100,0,.4);letter-spacing:4px;transition:all .2s">馃挭 绔嬪嵆寮€鎾?/button>
 
 <!-- Duration picker (hidden initially) -->
 <div id="workoutPicker" style="display:none;margin-top:16px">
-<div style="text-align:center;margin-bottom:10px;font-size:.85rem;color:rgba(255,150,50,.7);font-weight:600">🔥 选择锻炼时长</div>
+<div style="text-align:center;margin-bottom:10px;font-size:.85rem;color:rgba(255,150,50,.7);font-weight:600">馃敟 閫夋嫨閿荤偧鏃堕暱</div>
 <div class="duration-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-<button onclick="logWorkout(30)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#cc5500,#ff6a00);color:#fff;transition:all .2s">30 分</button>
-<button onclick="logWorkout(15)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">15 分</button>
-<button onclick="logWorkout(10)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">10 分</button>
-<button onclick="logWorkout(5)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">5 分</button>
-<button onclick="logWorkout(3)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">3 分</button>
-<button onclick="logWorkout(2)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">2 分</button>
-<button onclick="logWorkout(1)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">1 分</button>
+<button onclick="logWorkout(30)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#cc5500,#ff6a00);color:#fff;transition:all .2s">30 鍒?/button>
+<button onclick="logWorkout(15)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">15 鍒?/button>
+<button onclick="logWorkout(10)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">10 鍒?/button>
+<button onclick="logWorkout(5)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">5 鍒?/button>
+<button onclick="logWorkout(3)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">3 鍒?/button>
+<button onclick="logWorkout(2)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">2 鍒?/button>
+<button onclick="logWorkout(1)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">1 鍒?/button>
 <button onclick="logWorkout(0.5)" style="padding:14px 0;border:none;border-radius:12px;font-size:.85rem;font-weight:600;cursor:pointer;background:rgba(255,150,50,.1);color:rgba(255,180,100,.6);border:1px solid rgba(255,150,50,.1);transition:all .2s">30s</button>
 </div>
 </div>
 
 <!-- Progress bar -->
 <div id="workoutProgress" style="display:none;margin-top:16px">
-<div class="progress-header"><span>进度</span><span id="workoutProgressText">0 / 45 分钟</span></div>
+<div class="progress-header"><span>杩涘害</span><span id="workoutProgressText">0 / 45 鍒嗛挓</span></div>
 <div class="progress-bar"><div class="progress-fill" id="workoutProgressFill" style="background:linear-gradient(90deg,#cc5500,#ff6a00)"></div></div>
 </div>
 </div>
 
 <div class="stats">
 
-<div class="stat-card"><div class="num" id="todayTotal">0</div><div class="label"id="statLabel1">今日已喝<id="statUnit1">(ml)</div></div>
+<div class="stat-card"><div class="num" id="todayTotal">0</div><div class="label"id="statLabel1">浠婃棩宸插枬<id="statUnit1">(ml)</div></div>
 
-<div class="stat-card"><div class="num" id="todayCount">0</div><div class="label"id="statLabel2">喝了<id="statUnit2">次数</div></div>
+<div class="stat-card"><div class="num" id="todayCount">0</div><div class="label"id="statLabel2">鍠濅簡<id="statUnit2">娆℃暟</div></div>
 
-<div class="stat-card"><div class="num" id="goalDisplay">2000</div><div class="label">推荐目标</div></div>
+<div class="stat-card"><div class="num" id="goalDisplay">2000</div><div class="label">鎺ㄨ崘鐩爣</div></div>
 
 </div>
 
 <div class="progress-section">
 
-<div class="progress-header"><span id="progressLabel">进度</span><span id="progressText">0 / 2000 ml</span></div>
+<div class="progress-header"><span id="progressLabel">杩涘害</span><span id="progressText">0 / 2000 ml</span></div>
 
 <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
@@ -324,19 +324,19 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="snooze-bar" id="snoozeBar">
 
-<span>? 提醒已暂停</span>
+<span>? 鎻愰啋宸叉殏鍋?/span>
 
 <span class="cd" id="snoozeCountdown"></span>
 
-<button onclick="cancelSnooze()" style="background:none;border:none;color:#4fc3f7;cursor:pointer;font-size:.8rem;margin-left:auto">恢复</button>
+<button onclick="cancelSnooze()" style="background:none;border:none;color:#4fc3f7;cursor:pointer;font-size:.8rem;margin-left:auto">鎭㈠</button>
 
 </div>
 
 <div class="mode-water active">
 <div class="btn-group">
-<button class="btn btn-drink" onclick="drink(state.cupSize)">🥤 喝一杯！</button>
-<button class="btn-sm" onclick="drink(500)">💪 500ml</button>
-<button class="btn-sm btn-custom" onclick="openModal(&apos;custom&apos;)">✍️ 自定义</button>
+<button class="btn btn-drink" onclick="drink(state.cupSize)">馃イ 鍠濅竴鏉紒</button>
+<button class="btn-sm" onclick="drink(500)">馃挭 500ml</button>
+<button class="btn-sm btn-custom" onclick="openModal(&apos;custom&apos;)">鉁嶏笍 鑷畾涔?/button>
 </div>
 </div>
 
@@ -344,19 +344,19 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="msg-box" id="msgBox">
 
-<div class="avatar" id="msgAvatar">👋</div>
+<div class="avatar" id="msgAvatar">馃憢</div>
 
-<div class="msg-text" id="msgText">点击 <span class="hl">🥤</span> 开始喝水</div>
+<div class="msg-text" id="msgText">鐐瑰嚮 <span class="hl">馃イ</span> 寮€濮嬪枬姘?/div>
 
 </div>
 
 <div class="tab-bar" id="mainTabs">
 
-<div class="tab active" onclick="switchTab(&apos;history&apos;,this)">📋</div>
+<div class="tab active" onclick="switchTab(&apos;history&apos;,this)">馃搵</div>
 
-<div class="tab" onclick="switchTab(&apos;chart&apos;,this)">📈</div>
+<div class="tab" onclick="switchTab(&apos;chart&apos;,this)">馃搱</div>
 
-<div class="tab" onclick="switchTab(&apos;leaderboard&apos;,this)">🏆</div>
+<div class="tab" onclick="switchTab(&apos;leaderboard&apos;,this)">馃弳</div>
 
 </div>
 
@@ -364,19 +364,19 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
 
-<span style="font-size:.8rem;color:rgba(160,200,255,.5)">今日喝水记录</span>
+<span style="font-size:.8rem;color:rgba(160,200,255,.5)">浠婃棩鍠濇按璁板綍</span>
 
-<a href="#" onclick="clearToday();return false" style="font-size:.75rem;color:rgba(255,80,80,.5);text-decoration:none">清空</a>
+<a href="#" onclick="clearToday();return false" style="font-size:.75rem;color:rgba(255,80,80,.5);text-decoration:none">娓呯┖</a>
 
 </div>
 
-<div class="history-list" id="historyList"><div class="history-empty">还没有喝水记录 😂</div></div>
+<div class="history-list" id="historyList"><div class="history-empty">杩樻病鏈夊枬姘磋褰?馃槀</div></div>
 
 </div>
 
 <div class="panel" id="panelChart">
 
-<div style="font-size:.8rem;color:rgba(160,200,255,.5);margin-bottom:6px">本周趋势</div>
+<div style="font-size:.8rem;color:rgba(160,200,255,.5);margin-bottom:6px">鏈懆瓒嬪娍</div>
 
 <div class="week-chart" id="weekChart"></div>
 
@@ -386,7 +386,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
 
-<span style="font-size:.8rem;color:rgba(160,200,255,.5)">排行榜</span>
+<span style="font-size:.8rem;color:rgba(160,200,255,.5)">鎺掕姒?/span>
 
 
 
@@ -398,15 +398,15 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 </div>
 <div class="btn-group" style="margin-top:12px">
 
-<button class="btn-sm" onclick="openModal(&apos;settings&apos;)" style="flex:1">⚙️</button>
+<button class="btn-sm" onclick="openModal(&apos;settings&apos;)" style="flex:1">鈿欙笍</button>
 
-<button class="btn-sm" onclick="resetToday()" style="flex:1;color:rgba(255,80,80,.6)">🔄</button>
+<button class="btn-sm" onclick="resetToday()" style="flex:1;color:rgba(255,80,80,.6)">馃攧</button>
 
-<button class="btn-sm" onclick="shareApp()" style="flex:1">📤</button>
+<button class="btn-sm" onclick="shareApp()" style="flex:1">馃摛</button>
 
 </div>
 
-<div class="footer">喝了么 v4.1 · 💧 💪 记得锻炼</div>
+<div class="footer">鍠濅簡涔?v4.2 路 馃挧 馃挭 璁板緱閿荤偧</div>
 
 </div>
 
@@ -416,37 +416,37 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="modal" style="text-align:center">
 
-<div style="font-size:3rem;margin-bottom:8px">👋</div>
+<div style="font-size:3rem;margin-bottom:8px">馃憢</div>
 
-<h2>欢迎来到喝了么！</h2>
+<h2>娆㈣繋鏉ュ埌鍠濅簡涔堬紒</h2>
 
-<p>告诉我基本信息，推荐每日锻炼时长</p>
+<p>鍛婅瘔鎴戝熀鏈俊鎭紝鎺ㄨ崘姣忔棩閿荤偧鏃堕暱</p>
 
-<label>性别</label>
+<label>鎬у埆</label>
 
-<select id="onboardGender"><option value="male">男性 ♂</option><option value="female">女性 ♀</option></select>
+<select id="onboardGender"><option value="male">鐢锋€?鈾?/option><option value="female">濂虫€?鈾€</option></select>
 
-<label>年龄</label>
+<label>骞撮緞</label>
 
 <input type="number" id="onboardAge" value="25" min="1" max="120">
 
-<label>昵称（排行榜用）</label>
+<label>鏄电О锛堟帓琛屾鐢級</label>
 
-<input type="text" id="onboardName" placeholder="输入昵称..." maxlength="12">
+<input type="text" id="onboardName" placeholder="杈撳叆鏄电О..." maxlength="12">
 
 <div id="onboardCalc" style="margin-top:16px;padding:12px;background:rgba(0,180,255,.08);border-radius:12px">
 
-<div style="font-size:.8rem;color:rgba(160,200,255,.6)">推荐每日饮水量：</div>
+<div style="font-size:.8rem;color:rgba(160,200,255,.6)">鎺ㄨ崘姣忔棩楗按閲忥細</div>
 
 <div style="font-size:2rem;font-weight:800;color:#4fc3f7;margin:4px 0" id="onboardGoal">2500</div>
 
-<div style="font-size:.75rem;color:rgba(160,200,255,.4)">ml / 天</div>
+<div style="font-size:.75rem;color:rgba(160,200,255,.4)">ml / 澶?/div>
 
 </div>
 
 <div class="m-actions" style="margin-top:16px">
 
-<button class="btn btn-drink" onclick="saveOnboard()" style="flex:1">🚀</button>
+<button class="btn btn-drink" onclick="saveOnboard()" style="flex:1">馃殌</button>
 
 </div>
 
@@ -460,57 +460,57 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="modal">
 
-<h2 id="modalTitle">⚙️ 设置</h2>
+<h2 id="modalTitle">鈿欙笍 璁剧疆</h2>
 
 <div id="modalBody">
 
-<label>每日目标 (ml)</label>
+<label>姣忔棩鐩爣 (ml)</label>
 
 <input type="number" id="goalInput" min="100" max="10000">
 
-<label>每次量</label>
+<label>姣忔閲?/label>
 
 <input type="number" id="cupInput" min="50" max="2000">
 
-<label>🔊</label>
+<label>馃攰</label>
 
-<select id="soundToggle"><option value="on">开启</option><option value="off">关闭</option></select>
+<select id="soundToggle"><option value="on">寮€鍚?/option><option value="off">鍏抽棴</option></select>
 
-<label>💕</label>
+<label>馃挄</label>
 
-<select id="praiseToggle"><option value="on">开?\x90\xaf\xef\xbc\x88\xe6\xaf\x8f\xe6\xac\xa1\xe5\x96\x9d\xe6\xb0\xb4\xe9\x83\xbd\xe5\xa4\xb8\xe4\xbd\xa0\xef\xbc\x89</option><option value="off">\xe5\x85\xb3\xe9\x97\xad</option></select>
+<select id="praiseToggle"><option value="on">寮€?\x90\xaf\xef\xbc\x88\xe6\xaf\x8f\xe6\xac\xa1\xe5\x96\x9d\xe6\xb0\xb4\xe9\x83\xbd\xe5\xa4\xb8\xe4\xbd\xa0\xef\xbc\x89</option><option value="off">\xe5\x85\xb3\xe9\x97\xad</option></select>
 
-<label>? 提醒模式</label>
+<label>? 鎻愰啋妯″紡</label>
 
 <select id="reminderMode">
 
-<option value="smart">智能模式（自适应频率）</option>
+<option value="smart">鏅鸿兘妯″紡锛堣嚜閫傚簲棰戠巼锛?/option>
 
-<option value="fixed">固定间隔</option>
+<option value="fixed">鍥哄畾闂撮殧</option>
 
-<option value="off">关闭提醒</option>
+<option value="off">鍏抽棴鎻愰啋</option>
 
 </select>
 
-<label>提醒开始时间</label>
+<label>鎻愰啋寮€濮嬫椂闂?/label>
 
 <input type="time" id="remindStart" value="08:00">
 
-<label>提醒结束时间</label>
+<label>鎻愰啋缁撴潫鏃堕棿</label>
 
 <input type="time" id="remindEnd" value="22:00">
 
 <div class="m-actions">
 
 <div class="mode-workout" style="margin-top:12px;border-top:1px solid rgba(255,150,50,.15);padding-top:12px">
-<label style="color:rgba(255,150,50,.7)">💪 撸铁目标 (分钟)</label>
+<label style="color:rgba(255,150,50,.7)">馃挭 鎾搁搧鐩爣 (鍒嗛挓)</label>
 <input type="number" id="workoutGoalInput" min="10" max="300" value="45">
-<label style="color:rgba(255,150,50,.7)">每组时长 (分钟)</label>
+<label style="color:rgba(255,150,50,.7)">姣忕粍鏃堕暱 (鍒嗛挓)</label>
 <input type="number" id="sessionInput" min="5" max="120" value="15">
 </div>
 <div class="m-actions">
-<button class="btn btn-ghost" onclick="closeModal()">取消</button>
-<button class="btn btn-drink" onclick="saveSettings()">保存</button>
+<button class="btn btn-ghost" onclick="closeModal()">鍙栨秷</button>
+<button class="btn btn-drink" onclick="saveSettings()">淇濆瓨</button>
 
 </div>
 
@@ -526,17 +526,17 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="modal">
 
-<h2>✍️喝水量</h2>
+<h2>鉁嶏笍鍠濇按閲?/h2>
 
-<label>量 (毫升/分钟)</label>
+<label>閲?(姣崌/鍒嗛挓)</label>
 
 <input type="number" id="customAmount" min="10" max="5000">
 
 <div class="m-actions">
 
-<button class="btn btn-ghost" onclick="closeCustomModal()">取消</button>
+<button class="btn btn-ghost" onclick="closeCustomModal()">鍙栨秷</button>
 
-<button class="btn btn-drink" onclick="confirmCustomDrink()">开喝！</button>
+<button class="btn btn-drink" onclick="confirmCustomDrink()">寮€鍠濓紒</button>
 
 </div>
 
@@ -550,21 +550,21 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="modal">
 
-<h2>我的资料</h2>
+<h2>鎴戠殑璧勬枡</h2>
 
-<label>昵称</label><input type="text" id="profileNameInput" maxlength="12">
+<label>鏄电О</label><input type="text" id="profileNameInput" maxlength="12">
 
-<label>性别</label>
+<label>鎬у埆</label>
 
-<select id="profileGenderInput"><option value="male">男性 ♂</option><option value="female">女性 ♀</option></select>
+<select id="profileGenderInput"><option value="male">鐢锋€?鈾?/option><option value="female">濂虫€?鈾€</option></select>
 
-<label>年龄</label><input type="number" id="profileAgeInput" min="1" max="120">
+<label>骞撮緞</label><input type="number" id="profileAgeInput" min="1" max="120">
 
 <div class="m-actions">
 
-<button class="btn btn-ghost" onclick="closeProfileModal()">取消</button>
+<button class="btn btn-ghost" onclick="closeProfileModal()">鍙栨秷</button>
 
-<button class="btn btn-drink" onclick="saveProfile()">保存</button>
+<button class="btn btn-drink" onclick="saveProfile()">淇濆瓨</button>
 
 </div>
 
@@ -580,23 +580,23 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="modal" style="text-align:center">
 
-<div style="font-size:3rem;margin-bottom:4px">💧</div>
+<div style="font-size:3rem;margin-bottom:4px">馃挧</div>
 
-<h2 style="font-size:1.6rem;margin-bottom:4px">喝了么</h2>
+<h2 style="font-size:1.6rem;margin-bottom:4px">鍠濅簡涔?/h2>
 
-<p style="color:rgba(160,200,255,.5);font-size:.85rem;margin-bottom:16px">今天你喝水了吗？</p>
+<p style="color:rgba(160,200,255,.5);font-size:.85rem;margin-bottom:16px">浠婂ぉ浣犲枬姘翠簡鍚楋紵</p>
 
 <div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;margin-bottom:14px;border:1px solid rgba(100,200,255,.1)">
-<div style="font-size:.75rem;color:rgba(160,200,255,.4);margin-bottom:4px">点击下方按钮复制分享消息</div>
-<div id="sharePreview" style="font-size:.8rem;color:rgba(160,200,255,.6);background:rgba(0,0,0,.2);border-radius:8px;padding:8px;text-align:left;word-break:break-all;line-height:1.5">💧 喝了么 - 今天你喝水了吗？<br><span style="font-size:.7rem;color:rgba(100,200,255,.4)">点开看看排行榜</span></div>
+<div style="font-size:.75rem;color:rgba(160,200,255,.4);margin-bottom:4px">鐐瑰嚮涓嬫柟鎸夐挳澶嶅埗鍒嗕韩娑堟伅</div>
+<div id="sharePreview" style="font-size:.8rem;color:rgba(160,200,255,.6);background:rgba(0,0,0,.2);border-radius:8px;padding:8px;text-align:left;word-break:break-all;line-height:1.5">馃挧 鍠濅簡涔?- 浠婂ぉ浣犲枬姘翠簡鍚楋紵<br><span style="font-size:.7rem;color:rgba(100,200,255,.4)">鐐瑰紑鐪嬬湅鎺掕姒?/span></div>
 </div>
 
 <div class="m-actions" style="gap:10px">
-<button class="btn btn-ghost" onclick="closeShareModal()" style="flex:1">关闭</button>
-<button class="btn btn-drink" onclick="copyShareLink()" style="flex:2">📋 复制分享</button>
+<button class="btn btn-ghost" onclick="closeShareModal()" style="flex:1">鍏抽棴</button>
+<button class="btn btn-drink" onclick="copyShareLink()" style="flex:2">馃搵 澶嶅埗鍒嗕韩</button>
 </div>
 
-<p style="font-size:.7rem;color:rgba(160,200,255,.25);margin-top:10px">复制后发到微信，朋友点开即可使用</p>
+<p style="font-size:.7rem;color:rgba(160,200,255,.25);margin-top:10px">澶嶅埗鍚庡彂鍒板井淇★紝鏈嬪弸鐐瑰紑鍗冲彲浣跨敤</p>
 
 </div>
 
@@ -607,4 +607,5 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 </body>
 
 </html>
+
 
