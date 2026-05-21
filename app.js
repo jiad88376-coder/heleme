@@ -1,4 +1,4 @@
-﻿const APP_URL = location.href;
+const APP_URL = location.href;
 const WS_URL = "wss://heleme-server-qjum-production.up.railway.app";
 const LS_KEY = "heleme_v2";
 
@@ -194,16 +194,21 @@ function renderLB(){
   var el=document.getElementById("leaderboardList"),items=[];
   var myId = state.userId;
   var myName = state.profile ? state.profile.name : "我";
-  items.push({id:myId,name:myName,totalMl:state.totalMl,count:state.count,isMe:true});
+  var myMl = state.totalMl;
+  var myCount = state.count;
   if (window.wsData && window.wsData.users) {
     var sv = window.wsData.users;
-    if (sv[myId] && sv[myId].totalMl > state.totalMl) {
-      items[0].totalMl = sv[myId].totalMl;
-      items[0].count = sv[myId].count;
+    if (sv[myId]) {
+      myMl = Math.max(myMl, sv[myId].totalMl || 0);
+      myCount = Math.max(myCount, sv[myId].count || 0);
+      myName = sv[myId].name || myName;
     }
-    Object.keys(sv).forEach(function(uid){
+  }
+  items.push({id:myId,name:myName,totalMl:myMl,count:myCount,isMe:true});
+  if (window.wsData && window.wsData.users) {
+    Object.keys(window.wsData.users).forEach(function(uid){
       if (uid !== myId) {
-        var u = sv[uid];
+        var u = window.wsData.users[uid];
         items.push({id:uid,name:u.name||"匿名",totalMl:u.totalMl||0,count:u.count||0,isMe:false});
       }
     });
@@ -211,24 +216,31 @@ function renderLB(){
   items.sort(function(a,b){return b.totalMl-a.totalMl});
   var alone = items.length === 1 && !window.wsConnected;
   if (items.length === 0 || alone) {
-    el.innerHTML="<div class=history-empty>启动服务器后排行榜自动更新<br><span style=font-size:.75rem>连接服务器即可看到所有用户</span></div>";
+    el.innerHTML="<div class=lb-empty><div style=font-size:2rem;margin-bottom:8px>📊</div><div>等待其他人加入……</div><div style=font-size:.75rem;color:rgba(160,200,255,.4);margin-top:4px>连接服务器即可看到所有用户</div></div>";
     return
   }
   el.innerHTML=items.map(function(e,i){
-    var r=i===0?"gold":(i===1?"silver":(i===2?"bronze":"normal"));
-    var pct=state.goal>0?Math.round(e.totalMl/state.goal*100):0;
-    return"<div class=lb-item><div class=lb-rank "+r+""+(i+1)+"</div><div class=lb-info><div class=lb-name>"+e.name+(e.isMe?" (你)":"")+"</div><div class=lb-meta>"+e.count+" 次</div></div><div class=lb-stat><div class=num>"+e.totalMl+"</div><div class=lbl>"+pct+"%</div></div></div>"
-  }).join("")
-  var countEl = document.getElementById("wsCount");
-  if (countEl && window.wsConnected) {
-    var c = window.wsData && window.wsData.users ? Object.keys(window.wsData.users).length : 0;
-    countEl.textContent = "🟢 " + c + " 人在线";
-  } else if (countEl) {
-    countEl.textContent = "🔴 未连接";
-  }
+    var medal = i===0 ? "🥇" : (i===1 ? "🥈" : (i===2 ? "🥉" : ""));
+    var maxMl = items[0].totalMl || 1;
+    var pct = Math.min(Math.round(e.totalMl/maxMl*100), 100);
+    var rankClass = i===0 ? "gold" : (i===1 ? "silver" : (i===2 ? "bronze" : "normal"));
+    var s = "<div class=lb-item" + (e.isMe ? " me" : "") + ">";
+    s += "<div class=\"lb-rank \" + rankClass + \"\">" + (medal || (i + 1)) + "</div>";
+    s += "<div class=lb-info>";
+    s += "<div class=lb-name>" + e.name + (e.isMe ? " <span class=lb-you>你</span>" : "") + "</div>";
+    s += "<div class=lb-count>💧 " + e.count + "杯</div>";
+    s += "<div class=lb-bar><div class=lb-bar-fill style=width:" + pct + "%></div></div>";
+    s += "</div>";
+    s += "<div class=lb-stat>";
+    s += "<div class=num>" + e.totalMl + "</div>";
+    s += "<div class=lbl>ml</div>";
+    s += "</div>";
+    s += "</div>";
+    return s;
+  }).join("");
+  var c = window.wsConnected && window.wsData && window.wsData.users ? Object.keys(window.wsData.users).length : 0;
+  el.innerHTML += "<div class=lb-status>🟢 " + c + " 人在线</div>";
 }
-
-
 function switchTab(name,btn){
   document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
   document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active")});
@@ -320,9 +332,6 @@ function openModal(mode){
     var p=state.profile||{};document.getElementById("profileNameInput").value=p.name||"";
     document.getElementById("profileGenderInput").value=p.gender||"male";document.getElementById("profileAgeInput").value=p.age||25;
     document.getElementById("profileModalOverlay").classList.add("active")
-  }else if(mode==="addFriend"){
-    document.getElementById("friendCodeInput").value="";document.getElementById("addFriendModalOverlay").classList.add("active");
-    setTimeout(function(){document.getElementById("friendCodeInput").focus()},100)
   }
 }
 
@@ -347,20 +356,22 @@ function saveProfile(){
 
 function confirmCustomDrink(){var ml=parseInt(document.getElementById("customAmount").value)||0;if(ml<=0){showToast("? 无效数量");return}closeCustomModal();drink(ml)}
 
-
-
-function copyFriendCode(){
-  navigator.clipboard.writeText(state.userId).then(function(){showToast("📋 已复制")}).catch(function(){showToast(state.userId)})
-}
-
 function shareApp(){
-  document.getElementById("shareLinkInput").value=APP_URL;document.getElementById("shareFriendCode").value=state.userId||"";
+  var p = state.profile || {};
+  var name = p.name || "朋友";
+  var preview = document.getElementById("sharePreview");
+  if (preview) {
+    preview.innerHTML = "💧 喝了么 - 今天你喝水了吗？<br><span style=font-size:.7rem;color:rgba(100,200,255,.4)>" + name + " 邀你一起喝水▗点开看看排行榜</span>";
+  }
   document.getElementById("shareModalOverlay").classList.add("active")
 }
 
 function copyShareLink(){
-  navigator.clipboard.writeText(APP_URL).then(function(){showToast("📤 链接已复制")}).catch(function(){showToast(APP_URL)})
+  var msg = "💧 喝了么 - 今天你喝水了吗？\n点开看看排行榜：" + APP_URL;
+  navigator.clipboard.writeText(msg).then(function(){showToast("📤 已复制，发给朋友吧！")}).catch(function(){showToast(APP_URL)})
 }
+
+function closeShareModal(){document.getElementById("shareModalOverlay").classList.remove("active")}
 
 function clearToday(){
   if(!state.logs.length)return;if(!confirm("确定清空？"))return;

@@ -198,6 +198,18 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 .lb-stat .lbl{font-size:.65rem;color:rgba(160,200,255,.3)}
 
+.lb-bar{height:4px;background:rgba(255,255,255,.06);border-radius:4px;margin-top:4px;overflow:hidden}
+.lb-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#0288d1,#4fc3f7);transition:width .5s ease}
+.lb-bar-fill.top1{background:linear-gradient(90deg,#ffd700,#ffaa00)}
+.lb-bar-fill.top2{background:linear-gradient(90deg,#c0c0c0,#a0a0a0)}
+.lb-bar-fill.top3{background:linear-gradient(90deg,#cd7f32,#b8860b)}
+.lb-you{display:inline-block;font-size:.65rem;background:linear-gradient(135deg,#0288d1,#00acc1);color:#fff;padding:0 6px;border-radius:8px;margin-left:4px;vertical-align:middle}
+.lb-empty{padding:30px 0;text-align:center}
+.lb-status{text-align:center;font-size:.7rem;color:rgba(160,200,255,.35);margin-top:8px;padding-bottom:4px}
+.lb-item.me{background:rgba(0,150,255,.08);border-color:rgba(0,150,255,.2)}
+.lb-count{font-size:.65rem;color:rgba(160,200,255,.4);margin-top:1px}
+
+
 .snooze-bar{display:none;align-items:center;gap:8px;padding:8px 14px;background:rgba(255,100,50,.1);border:1px solid rgba(255,100,50,.2);border-radius:10px;margin:8px 0;font-size:.8rem;color:rgba(255,150,100,.8)}
 
 .snooze-bar.show{display:flex}
@@ -322,28 +334,14 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <span style="font-size:.8rem;color:rgba(160,200,255,.5)">排行榜</span>
 
-<button class="btn-sm" onclick="openModal(&apos;addFriend&apos;)" style="flex:none;padding:6px 14px;font-size:.75rem">＋添加好友</button>
+
 
 </div>
 
 <div id="leaderboardList"></div>
 
-<div style="margin-top:10px;padding:10px 14px;background:rgba(255,255,255,.03);border-radius:10px">
-
-<div style="font-size:.7rem;color:rgba(160,200,255,.4);margin-bottom:4px">我的好友码（分享给朋友）</div>
-
-<div style="display:flex;gap:8px;align-items:center">
-
-<code id="myFriendCode" style="font-size:.7rem;color:rgba(160,200,255,.5);word-break:break-all;flex:1"></code>
-
-<button class="btn-sm" onclick="copyFriendCode()" style="flex:none;padding:4px 10px;font-size:.7rem">📋</button>
 
 </div>
-
-</div>
-
-</div>
-
 <div class="btn-group" style="margin-top:12px">
 
 <button class="btn-sm" onclick="openModal(&apos;settings&apos;)" style="flex:1">⚙️</button>
@@ -514,57 +512,31 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 </div>
 
-<!--- Add Friend --->
-
-<div class="overlay" id="addFriendModalOverlay">
-
-<div class="modal">
-
-<h2>👥</h2>
-
-<p>输入好友码，排行榜可见</p>
-
-<label>好友码</label>
-
-<input type="text" id="friendCodeInput" placeholder="粘贴好友码...">
-
-<div class="m-actions">
-
-<button class="btn btn-ghost" onclick="closeAddFriendModal()">取消</button>
-
-<button class="btn btn-drink" onclick="addFriend()">添加</button>
-
-</div>
-
-</div>
-
 </div>
 
 <!--- Share --->
 
 <div class="overlay" id="shareModalOverlay">
 
-<div class="modal">
+<div class="modal" style="text-align:center">
 
-<h2>📤喝了么</h2>
+<div style="font-size:3rem;margin-bottom:4px">💧</div>
 
-<p>把链接发给朋友，一起喝水！</p>
+<h2 style="font-size:1.6rem;margin-bottom:4px">喝了么</h2>
 
-<label>App 链接</label>
+<p style="color:rgba(160,200,255,.5);font-size:.85rem;margin-bottom:16px">今天你喝水了吗？</p>
 
-<input type="text" id="shareLinkInput" readonly onclick="this.select()">
-
-<label style="margin-top:16px">我的好友码</label>
-
-<input type="text" id="shareFriendCode" readonly onclick="this.select()">
-
-<div class="m-actions">
-
-<button class="btn btn-ghost" onclick="closeShareModal()">关闭</button>
-
-<button class="btn btn-drink" onclick="copyShareLink()">📋</button>
-
+<div style="background:rgba(255,255,255,.04);border-radius:12px;padding:10px;margin-bottom:14px;border:1px solid rgba(100,200,255,.1)">
+<div style="font-size:.75rem;color:rgba(160,200,255,.4);margin-bottom:4px">点击下方按钮复制分享消息</div>
+<div id="sharePreview" style="font-size:.8rem;color:rgba(160,200,255,.6);background:rgba(0,0,0,.2);border-radius:8px;padding:8px;text-align:left;word-break:break-all;line-height:1.5">💧 喝了么 - 今天你喝水了吗？<br><span style="font-size:.7rem;color:rgba(100,200,255,.4)">点开看看排行榜</span></div>
 </div>
+
+<div class="m-actions" style="gap:10px">
+<button class="btn btn-ghost" onclick="closeShareModal()" style="flex:1">关闭</button>
+<button class="btn btn-drink" onclick="copyShareLink()" style="flex:2">📋 复制分享</button>
+</div>
+
+<p style="font-size:.7rem;color:rgba(160,200,255,.25);margin-top:10px">复制后发到微信，朋友点开即可使用</p>
 
 </div>
 
