@@ -273,8 +273,7 @@ function renderWorkout(){
     var _ws=document.getElementById("workoutSessions");if(_ws)_ws.textContent=state.workoutSessions||0;
     var fillEl = document.getElementById("gymFill");
     if (fillEl) fillEl.style.height=(g>0?Math.min(Math.round(t/g*100),100):0)+"%";
-    var gl = document.getElementById("gymLabel");
-    if (gl) gl.textContent=Math.round(t*10)/10+"′";
+    // gymLabel removed - stag SVG shows in workout mode
     var _pf=document.getElementById("workoutProgressFill");if(_pf)_pf.style.width=(g>0?Math.min(Math.round(t/g*100),100):0)+"%";
     var _pt=document.getElementById("workoutProgressText");if(_pt)_pt.textContent=Math.round(t*10)/10+" / "+g+" 分钟";
     renderLB();
@@ -532,7 +531,7 @@ function init(){
   var bg=document.getElementById("waterBg");
   for(var i=0;i<15;i++){var b=document.createElement("div");b.className="bubble";var s=10+Math.random()*30;b.style.width=s+"px";b.style.height=s+"px";b.style.left=Math.random()*100+"%";b.style.animationDuration=(8+Math.random()*12)+"s";b.style.animationDelay=(Math.random()*10)+"s";bg.appendChild(b)}
   connectWS();
-  switchMode(state.mode || "water");
+  state.mode = "water"; switchMode("water");
   if(!state.profile){showMsg({e:"💧",t:"完成引导设置开始喝水 <span class=hl>☝️</span>"})}else{setTimeout(function(){if(state.totalMl<state.goal)showMsg(randFrom(MSGS.remind))},1500);startReminder()}
 }
 
