@@ -75,6 +75,22 @@ function updateWSStatus(){
   el.textContent = wsConnected ? "🟢 已连接" : "🔴 未连接";
 }
 
+function logWorkout(minutes){
+  if (!minutes || minutes <= 0) return;
+  if (state.mode !== "workout") return;
+  state.totalMl += minutes;
+  state.count++;
+  state.logs.push({time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}),ml:minutes});
+  var td=getToday();state.weekData[td]=(state.weekData[td]||0)+minutes;
+  saveState();render();
+  showToast("💪 +"+minutes+"分钟");
+  showMsg(randFrom(MSGS.praise));
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    var p = state.profile || {};
+    ws.send(JSON.stringify({type:"workout",userId:state.userId,name:p.name||"锻炼达人",totalMin:state.totalMl,sessions:state.count}));
+  }
+}
+
 function sendDrinkUpdate(){
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
   var p = state.profile || {};
@@ -162,6 +178,7 @@ function playGulp(){
 
 function drink(ml){
   if(!ml||ml<=0)return;
+  if(state.mode==="workout"){logWorkout(Math.min(ml,60));return}
   if(snoozeUntil&&Date.now()<snoozeUntil){showToast("? 提醒暂停中");return}
   state.totalMl+=ml;state.count++;
   state.logs.push({time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}),ml:ml});

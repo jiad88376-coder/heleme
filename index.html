@@ -298,14 +298,28 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 </div>
 
+<div class="mode-water active">
 <div class="btn-group">
+<button class="btn btn-drink" onclick="drink(state.cupSize)">🥤 喝一杯！</button>
+<button class="btn-sm" onclick="drink(500)">💪 500ml</button>
+<button class="btn-sm btn-custom" onclick="openModal(&apos;custom&apos;)">✍️ 自定义</button>
+</div>
+</div>
 
-<button class="btn btn-drink" onclick="drink(state.cupSize)">🥤<span class="ripple"></span></button>
-
-<button class="btn-sm" onclick="drink(500)">💪</button>
-
-<button class="btn-sm btn-custom" onclick="openModal(&apos;custom&apos;)">✍️</button>
-
+<div class="mode-workout">
+<div style="margin:16px 0">
+<div style="text-align:center;margin-bottom:10px;font-size:.85rem;color:rgba(255,150,50,.7);font-weight:600">💪 选择锻炼时长</div>
+<div class="duration-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+<button class="btn-duration" data-min="30" onclick="logWorkout(30)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#cc5500,#ff6a00);color:#fff;transition:all .2s">30 分</button>
+<button class="btn-duration" data-min="15" onclick="logWorkout(15)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">15 分</button>
+<button class="btn-duration" data-min="10" onclick="logWorkout(10)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">10 分</button>
+<button class="btn-duration" data-min="5" onclick="logWorkout(5)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">5 分</button>
+<button class="btn-duration" data-min="3" onclick="logWorkout(3)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">3 分</button>
+<button class="btn-duration" data-min="2" onclick="logWorkout(2)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">2 分</button>
+<button class="btn-duration" data-min="1" onclick="logWorkout(1)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">1 分</button>
+<button class="btn-duration" data-min="0.5" onclick="logWorkout(0.5)" style="padding:12px 0;border:none;border-radius:12px;font-size:.85rem;font-weight:600;cursor:pointer;background:rgba(255,150,50,.1);color:rgba(255,180,100,.6);border:1px solid rgba(255,150,50,.1);transition:all .2s">30s</button>
+</div>
+</div>
 </div>
 
 <div class="msg-box" id="msgBox">
