@@ -239,10 +239,14 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 <div class="container">
 
 <div class="header">
+<div class="mode-tabs">
+<span class="mode-tab active" id="modeWater" onclick="switchMode('water')">💧 喝了么</span>
+<span class="mode-tab" id="modeWorkout" onclick="switchMode('workout')">💪 撸了么</span>
+</div>
 
-<h1>喝了么</h1>
+<h1 id="appTitle">喝了么</h1>
 
-<div class="subtitle">—— 你今天喝了吗？</div>
+<div class="subtitle" id="appSubtitle">—— 你今天喝了吗？</div>
 
 <div class="profile-badge" id="profileBadge" onclick="openModal(&apos;profile&apos;)"><span id="profileEmoji">👋</span> <span id="profileName">未设置</span></div>
 
