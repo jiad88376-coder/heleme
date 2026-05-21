@@ -1,0 +1,12 @@
+{
+  "name": "heleme",
+  "version": "3.0",
+  "description": "Heleme water tracker",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.0.0"
+  }
+}

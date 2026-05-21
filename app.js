@@ -1,5 +1,63 @@
 ﻿const APP_URL = "https://jiad88376-coder.github.io/heleme/";
+const WS_URL = "wss://xxx.ngrok.io"; // TODO: 替换为你的 ngrok 地址
 const LS_KEY = "heleme_v2";
+
+// WebSocket
+var ws = null;
+var wsConnected = false;
+var wsReconnectTimer = null;
+window.wsData = { users: {} };
+
+function connectWS(){
+  if (ws && ws.readyState === WebSocket.OPEN) return;
+  try {
+    ws = new WebSocket(WS_URL);
+    ws.onopen = function(){
+      wsConnected = true;
+      state.wsConnected = true;
+      var p = state.profile || {};
+      ws.send(JSON.stringify({type:"join",userId:state.userId,name:p.name||"匿名",totalMl:state.totalMl,count:state.count}));
+      updateWSStatus();
+    };
+    ws.onmessage = function(e){
+      try {
+        var msg = JSON.parse(e.data);
+        if (msg.type === "leaderboard" && msg.users) {
+          var myId = state.userId;
+          if (msg.users[myId] && msg.users[myId].totalMl > state.totalMl) {
+            state.totalMl = msg.users[myId].totalMl;
+            state.count = msg.users[myId].count;
+          }
+          window.wsData = msg;
+          renderLB();
+        }
+      } catch(e) {}
+    };
+    ws.onclose = function(){
+      wsConnected = false;
+      state.wsConnected = false;
+      updateWSStatus();
+      if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
+      wsReconnectTimer = setTimeout(connectWS, 5000);
+    };
+    ws.onerror = function(){};
+  } catch(e) {
+    if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
+    wsReconnectTimer = setTimeout(connectWS, 5000);
+  }
+}
+
+function updateWSStatus(){
+  var el = document.getElementById("wsCount");
+  if (!el) return;
+  el.textContent = wsConnected ? "🟢 已连接" : "🔴 未连接";
+}
+
+function sendDrinkUpdate(){
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  var p = state.profile || {};
+  ws.send(JSON.stringify({type:"drink",userId:state.userId,name:p.name||"匿名",totalMl:state.totalMl,count:state.count}));
+}
 
 const MSGS = {
   remind:[
@@ -39,7 +97,7 @@ let audioCtx = null;
 function calcGoal(g,a){a=parseInt(a)||25;if(a<6)return 1200;if(a<13)return g==="male"?1500:1300;if(a<18)return g==="male"?2200:1800;if(a<60)return g==="male"?2500:2000;return g==="male"?2200:1800}
 
 function getDefaultState(){
-  return{version:3,goal:2000,cupSize:200,sound:"on",praiseMode:"on",remindMode:"smart",remindStart:"08:00",remindEnd:"22:00",today:getToday(),totalMl:0,count:0,logs:[],weekData:{},profile:null,userId:genId(),friends:[]}
+  return{version:3,goal:2000,cupSize:200,sound:"on",praiseMode:"on",remindMode:"smart",remindStart:"08:00",remindEnd:"22:00",today:getToday(),totalMl:0,count:0,logs:[],weekData:{},profile:null,userId:genId(),wsConnected:false}
 }
 function genId(){return"hlm_"+Math.random().toString(36).substr(2,12)+Date.now().toString(36)}
 function getToday(){return new Date().toISOString().slice(0,10)}
@@ -51,7 +109,7 @@ function loadState(){
       var s=JSON.parse(r);var td=getToday();
       if(s.today!==td){if(s.today)s.weekData[s.today]=(s.weekData[s.today]||0)+s.totalMl;s.today=td;s.totalMl=0;s.count=0;s.logs=[]}
       if(!s.version){s.goal=2000;s.cupSize=200}
-      if(!s.userId)s.userId=genId();if(!s.friends)s.friends=[];if(!s.sound)s.sound="on";if(s.praiseMode===undefined)s.praiseMode="on"
+      if(!s.userId)s.userId=genId();if(!s.sound)s.sound="on";if(s.praiseMode===undefined)s.praiseMode="on"
       if(!s.remindMode)s.remindMode="smart";if(!s.remindStart)s.remindStart="08:00";if(!s.remindEnd)s.remindEnd="22:00"
       return s
     }
@@ -85,7 +143,7 @@ function drink(ml){
   state.totalMl+=ml;state.count++;
   state.logs.push({time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}),ml:ml});
   var td=getToday();state.weekData[td]=(state.weekData[td]||0)+ml;
-  saveState();render();playGulp();
+  saveState();render();playGulp();sendDrinkUpdate();
   var r1=state.totalMl/state.goal;
   if(state.praiseMode==="on"){showMsg(randFrom(MSGS.praise))}else{if(r1>=1.2)showMsg(randFrom(MSGS.over));else if(r1>=1)showMsg(randFrom(MSGS.goal));else showMsg(randFrom(MSGS.praise))}
   showToast("💧 +"+ml+"ml")
@@ -102,7 +160,7 @@ function render(){
   fill.classList.toggle("fire",t>0&&t<g*0.3);
   document.getElementById("progressLabel").textContent=t>=g?"✅ 今日达标":"📈 进度";
   renderHistory();renderChart();renderLB();renderProfile();
-  if(state.profile)document.getElementById("myFriendCode").textContent=state.userId
+  
 }
 
 function renderHistory(){
@@ -133,17 +191,43 @@ function renderProfile(){
 }
 
 function renderLB(){
-  var el=document.getElementById("leaderboardList"),entries=[];
-  if(state.profile)entries.push({id:state.userId,name:state.profile.name||"我",totalMl:state.totalMl,count:state.count,isMe:true});
-  (state.friends||[]).forEach(function(f){if(f.totalMl!==undefined)entries.push({id:f.id,name:f.name||"好友",totalMl:f.totalMl||0,count:f.count||0,isMe:false})});
-  entries.sort(function(a,b){return b.totalMl-a.totalMl});
-  if(!entries.length){el.innerHTML="<div class=history-empty>还没有排行榜数据</div>";return}
-  el.innerHTML=entries.map(function(e,i){
+  var el=document.getElementById("leaderboardList"),items=[];
+  var myId = state.userId;
+  var myName = state.profile ? state.profile.name : "我";
+  items.push({id:myId,name:myName,totalMl:state.totalMl,count:state.count,isMe:true});
+  if (window.wsData && window.wsData.users) {
+    var sv = window.wsData.users;
+    if (sv[myId] && sv[myId].totalMl > state.totalMl) {
+      items[0].totalMl = sv[myId].totalMl;
+      items[0].count = sv[myId].count;
+    }
+    Object.keys(sv).forEach(function(uid){
+      if (uid !== myId) {
+        var u = sv[uid];
+        items.push({id:uid,name:u.name||"匿名",totalMl:u.totalMl||0,count:u.count||0,isMe:false});
+      }
+    });
+  }
+  items.sort(function(a,b){return b.totalMl-a.totalMl});
+  var alone = items.length === 1 && !window.wsConnected;
+  if (items.length === 0 || alone) {
+    el.innerHTML="<div class=history-empty>启动服务器后排行榜自动更新<br><span style=font-size:.75rem>连接服务器即可看到所有用户</span></div>";
+    return
+  }
+  el.innerHTML=items.map(function(e,i){
     var r=i===0?"gold":(i===1?"silver":(i===2?"bronze":"normal"));
     var pct=state.goal>0?Math.round(e.totalMl/state.goal*100):0;
-    return"<div class=lb-item><div class=lb-rank "+r+">"+(i+1)+"</div><div class=lb-info><div class=lb-name>"+e.name+(e.isMe?" <span style=color:#4fc3f7;font-size:.65rem>(你)</span>":"")+"</div><div class=lb-meta>"+e.count+" 次</div></div><div class=lb-stat><div class=num>"+e.totalMl+"</div><div class=lbl>"+pct+"%</div></div></div>"
+    return"<div class=lb-item><div class=lb-rank "+r+""+(i+1)+"</div><div class=lb-info><div class=lb-name>"+e.name+(e.isMe?" (你)":"")+"</div><div class=lb-meta>"+e.count+" 次</div></div><div class=lb-stat><div class=num>"+e.totalMl+"</div><div class=lbl>"+pct+"%</div></div></div>"
   }).join("")
+  var countEl = document.getElementById("wsCount");
+  if (countEl && window.wsConnected) {
+    var c = window.wsData && window.wsData.users ? Object.keys(window.wsData.users).length : 0;
+    countEl.textContent = "🟢 " + c + " 人在线";
+  } else if (countEl) {
+    countEl.textContent = "🔴 未连接";
+  }
 }
+
 
 function switchTab(name,btn){
   document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});
@@ -245,8 +329,8 @@ function openModal(mode){
 function closeModal(){document.getElementById("modalOverlay").classList.remove("active")}
 function closeCustomModal(){document.getElementById("customModalOverlay").classList.remove("active")}
 function closeProfileModal(){document.getElementById("profileModalOverlay").classList.remove("active")}
-function closeAddFriendModal(){document.getElementById("addFriendModalOverlay").classList.remove("active")}
-function closeShareModal(){document.getElementById("shareModalOverlay").classList.remove("active")}
+
+
 
 function saveSettings(){
   state.goal=Math.max(100,Math.min(10000,parseInt(document.getElementById("goalInput").value)||2000));
@@ -263,15 +347,7 @@ function saveProfile(){
 
 function confirmCustomDrink(){var ml=parseInt(document.getElementById("customAmount").value)||0;if(ml<=0){showToast("❌ 无效数量");return}closeCustomModal();drink(ml)}
 
-function addFriend(){
-  var code=document.getElementById("friendCodeInput").value.trim();
-  if(!code){showToast("❌ 输入好友码");return}
-  if(code===state.userId){showToast("❌ 不能添加自己");return}
-  if((state.friends||[]).some(function(f){return f.id===code})){showToast("ℹ️ 已添加");closeAddFriendModal();return}
-  if(!state.friends)state.friends=[];
-  state.friends.push({id:code,name:"好友 #"+(state.friends.length+1),totalMl:Math.floor(Math.random()*state.goal*0.8),count:Math.floor(Math.random()*8)+1});
-  saveState();render();closeAddFriendModal();showToast("✅ 好友已添加")
-}
+
 
 function copyFriendCode(){
   navigator.clipboard.writeText(state.userId).then(function(){showToast("📋 已复制")}).catch(function(){showToast(state.userId)})
@@ -300,10 +376,10 @@ function resetToday(){
 
 document.addEventListener("keydown",function(e){if(e.target.tagName==="INPUT"||e.target.tagName==="SELECT")return;if(e.key===" "||e.key==="Spacebar"){e.preventDefault();drink(state.cupSize)}});
 
-["modalOverlay","customModalOverlay","profileModalOverlay","addFriendModalOverlay","shareModalOverlay"].forEach(function(id){
+["modalOverlay","customModalOverlay","profileModalOverlay"].forEach(function(id){
   document.getElementById(id).addEventListener("click",function(e){
     if(e.target===this){
-      var map={modalOverlay:closeModal,customModalOverlay:closeCustomModal,profileModalOverlay:closeProfileModal,addFriendModalOverlay:closeAddFriendModal,shareModalOverlay:closeShareModal};
+      var map={modalOverlay:closeModal,customModalOverlay:closeCustomModal,profileModalOverlay:closeProfileModal};
       map[id]()
     }
   })
@@ -313,10 +389,7 @@ function init(){
   if("Notification"in window&&Notification.permission==="default")Notification.requestPermission();
   var bg=document.getElementById("waterBg");
   for(var i=0;i<15;i++){var b=document.createElement("div");b.className="bubble";var s=10+Math.random()*30;b.style.width=s+"px";b.style.height=s+"px";b.style.left=Math.random()*100+"%";b.style.animationDuration=(8+Math.random()*12)+"s";b.style.animationDelay=(Math.random()*10)+"s";bg.appendChild(b)}
-  var params=new URLSearchParams(window.location.search),fc=params.get("friend");
-  if(fc&&fc!==state.userId&&!((state.friends||[]).some(function(f){return f.id===fc}))){
-    if(!state.friends)state.friends=[];state.friends.push({id:fc,name:"好友(链接)",totalMl:0,count:0});saveState();showToast("👋 好友已添加")
-  }
+  connectWS();
   render();
   if(!state.profile){showMsg({e:"👋",t:"完成引导设置开始喝水 <span class=hl>☝️</span>"})}else{setTimeout(function(){if(state.totalMl<state.goal)showMsg(randFrom(MSGS.remind))},1500);startReminder()}
 }
