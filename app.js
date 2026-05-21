@@ -244,22 +244,38 @@ function switchMode(mode){
 }
 
 function render(){
+  if (state.mode === "workout") { renderWorkout(); return; }
+  renderWater();
+}
+
+function renderWater(){
   var t=state.totalMl,g=state.goal,r=Math.min(t/g,1);
   var totalEl = document.getElementById("todayTotal");
   if (totalEl) totalEl.textContent=t;
   var countEl = document.getElementById("todayCount");
   if (countEl) countEl.textContent=state.count;
   document.getElementById("goalDisplay").textContent=g;
-  var fillEl = state.mode === "workout" ? document.getElementById("gymFill") : document.getElementById("waterFill");
+  var fillEl = document.getElementById("waterFill");
   if (fillEl) fillEl.style.height=(r*100)+"%";
   document.getElementById("progressText").textContent=t+" / "+g+" ml";
   var fill=document.getElementById("progressFill");fill.style.width=Math.round(r*100)+"%";
   fill.classList.toggle("fire",t>0&&t<g*0.3);
   document.getElementById("progressLabel").textContent=t>=g?"✅ 今日达标":"📈 进度";
   renderHistory();renderChart();renderLB();renderProfile();
-  
 }
 
+function renderWorkout(){
+  var t=state.workoutTotal||0,g=state.workoutGoal||45;
+  document.getElementById("workoutTotal").textContent=Math.round(t*10)/10;
+  document.getElementById("workoutSessions").textContent=state.workoutSessions||0;
+  var fillEl = document.getElementById("gymFill");
+  if (fillEl) fillEl.style.height=(g>0?Math.min(Math.round(t/g*100),100):0)+"%";
+  var gl = document.getElementById("gymLabel");
+  if (gl) gl.textContent=Math.round(t*10)/10+"′";
+  document.getElementById("workoutProgressFill").style.width=(g>0?Math.min(Math.round(t/g*100),100):0)+"%";
+  document.getElementById("workoutProgressText").textContent=Math.round(t*10)/10+" / "+g+" 分钟";
+  renderLB();
+}
 function renderHistory(){
   var el=document.getElementById("historyList");
   if(!state.logs.length){el.innerHTML="<div class=history-empty>还没有喝水记录</div>";return}
@@ -291,8 +307,8 @@ function renderLB(){
   var el=document.getElementById("leaderboardList"),items=[];
   var myId = state.userId;
   var myName = state.profile ? state.profile.name : "我";
-  var myMl = state.totalMl;
-  var myCount = state.count;
+  var myMl = state.mode === "workout" ? (state.workoutTotal||0) : state.totalMl;
+  var myCount = state.mode === "workout" ? (state.workoutSessions||0) : state.count;
   if (window.wsData && window.wsData.users) {
     var sv = window.wsData.users;
     if (sv[myId]) {
