@@ -1,4 +1,3 @@
-﻿node_modules/
-leaderboard.json
+node_modules/
 .env
 *.log

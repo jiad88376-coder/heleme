@@ -1,4 +1,4 @@
-﻿const APP_URL = location.href;
+const APP_URL = location.href;
 const WS_PROTO = location.protocol === "https:" ? "wss:" : "ws:"; const WS_URL = WS_PROTO + "//" + location.host;
 const LS_KEY = "heleme_v2";
 
