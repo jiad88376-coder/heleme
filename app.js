@@ -31,6 +31,17 @@ function connectWS(){
           window.wsData = msg;
           renderLB();
         }
+        if (msg.type === "nameTaken") {
+          showToast("该昵称已被他人使用，请换一个");
+          // Revert local name
+          if (state.profile) {
+            state.profile.name = (state.profile.name || "") + "_old";
+            saveState();
+          }
+        }
+        if (msg.type === "checkNameResult" && msg.available === false) {
+          showToast("该昵称已被他人使用，请换一个");
+        }
       } catch(e) {}
     };
     ws.onclose = function(){

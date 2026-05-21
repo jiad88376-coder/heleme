@@ -130,6 +130,19 @@ wss.on("connection", function(ws, req) {
                 console.log(user.name, "joined");
             }
 
+            if (msg.type === "checkName" && msg.name && msg.userId) {
+                var nameLower = msg.name.toLowerCase().trim();
+                var taken = false;
+                if (nameLower) {
+                    Object.keys(data.users).forEach(function(uid) {
+                        if (uid !== msg.userId && data.users[uid].name && data.users[uid].name.toLowerCase().trim() === nameLower) {
+                            taken = true;
+                        }
+                    });
+                }
+                ws.send(JSON.stringify({ type: "checkNameResult", name: msg.name, available: !taken }));
+            }
+
             if (msg.type === "ping") {
                 ws.send(JSON.stringify({ type: "pong" }));
             }

@@ -1,6 +1,6 @@
 {
   "name": "heleme",
-  "version": "3.2",
+  "version": "3.3",
   "description": "Heleme water tracker",
   "main": "server.js",
   "scripts": {
