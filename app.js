@@ -99,7 +99,7 @@ function logWorkout(minutes){
   saveState();
   try{render()}catch(e){console.error('render:',e)}
   showToast("💪 +"+minutes+"分钟");
-  showMsg(randFrom(MSGS.praise));
+  showMsg(randFrom(MSGS.workoutPraise));
   if (ws && ws.readyState === WebSocket.OPEN) {
     var p = state.profile || {};
     ws.send(JSON.stringify({type:"workout",userId:state.userId,name:p.name||"锻炼达人",totalMin:state.workoutTotal,sessions:state.workoutSessions}));
@@ -141,6 +141,30 @@ const MSGS = {
   ],
   goal:[{e:"💧",t:"<span class=hl>今日目标达成！</span> 没被渴死！"},{e:"💧",t:"<span class=hl>喝水之王！</span>"}],
   over:[{e:"💧",t:"别 <span class=hl>灌成水母</span>"},{e:"💧",t:"小心 <span class=hl>住厕所</span>"}]
+,
+  workoutRemind:[
+    {e:"💪",t:"?? <span class=hl>????</span>??????????"},
+    {e:"💪",t:"?? <span class=hl>??</span> ????????"},
+    {e:"💪",t:"?? <span class=hl>?????</span>???????"},
+    {e:"💪",t:"??????? <span class=hl>30??</span> ??"},
+    {e:"💪",t:"???? <span class=hl>??</span> ?????"},
+    {e:"💪",t:"??????<span class=hl>????</span>"},
+    {e:"💪",t:"?? <span class=hl>???</span> ???????"},
+    {e:"💪",t:"??? <span class=hl>???</span>?????"},
+    {e:"💪",t:"???????? <span class=hl>???</span>"},
+  ],
+  workoutPraise:[
+    {e:"💪",t:"????<span class=hl>??+1</span>?"},
+    {e:"💪",t:"? <span class=hl>????</span> ??????"},
+    {e:"💪",t:"?? <span class=hl>99%</span> ????"},
+    {e:"💪",t:"??????<span class=hl>????</span>????"},
+    {e:"💪",t:"???? <span class=hl>???</span>"},
+    {e:"💪",t:"?? <span class=hl>??</span> ?????"},
+    {e:"💪",t:"??????? <span class=hl>?????</span>?"},
+    {e:"💪",t:"??????<span class=hl>?????</span>?"},
+  ],
+  workoutGoal:[{e:"💪",t:"<span class=hl>?????????</span> ??????"},{e:"💪",t:"<span class=hl>?????</span>"}],
+  workoutOver:[{e:"💪",t:"? <span class=hl>???</span>???????"},{e:"💪",t:"?????<span class=hl>?????</span>"}]
 };
 
 let state = loadState();
@@ -227,6 +251,14 @@ function switchMode(mode){
     if (!state.workoutGoal) state.workoutGoal = 45;
     if (!state.workoutSessionMin) state.workoutSessionMin = 15;
   }
+  // Workout mode: show workout UI, hide water stuff
+  var ws = document.getElementById("waterStats");
+  var wp = document.getElementById("waterProgress");
+  var sb = document.getElementById("snoozeBar");
+  var wb = document.getElementById("waterBtns");
+  var hg = document.getElementById("historyBtn");
+  var ht = document.getElementById("historyTab");
+  var ct = document.getElementById("chartTab");
   if (mode === "workout") {
     var btn = document.getElementById("btnStartWorkout");
     var picker = document.getElementById("workoutPicker");
@@ -236,6 +268,31 @@ function switchMode(mode){
     if (picker) picker.style.display = "none";
     if (stats) stats.style.display = "flex";
     if (prog) prog.style.display = "block";
+    if (ws) ws.style.display = "none";
+    if (wp) wp.style.display = "none";
+    if (sb) sb.style.display = "none";
+    if (wb) wb.style.display = "none";
+    if (hg) hg.style.display = "none";
+    if (ht) ht.style.display = "none";
+    if (ct) ct.style.display = "none";
+    // Orange theme for workout tab
+    var mt = document.getElementById("modeWorkout");
+    if (mt) mt.style.cssText = "background:rgba(255,100,0,.15);color:#ff8c00;border-color:rgba(255,100,0,.3)";
+    var mw = document.getElementById("modeWater");
+    if (mw) mw.style.cssText = "";
+  } else {
+    if (ws) ws.style.display = "flex";
+    if (wp) wp.style.display = "block";
+    if (sb) sb.style.display = "";
+    if (wb) wb.style.display = "";
+    if (hg) hg.style.display = "";
+    if (ht) ht.style.display = "";
+    if (ct) ct.style.display = "";
+    // Blue theme for water tab
+    var mw = document.getElementById("modeWater");
+    if (mw) mw.style.cssText = "background:rgba(0,150,255,.15);color:#4fc3f7;border-color:rgba(0,150,255,.3)";
+    var mt = document.getElementById("modeWorkout");
+    if (mt) mt.style.cssText = "";
   }
   render();
   // Re-send join with correct app
@@ -349,7 +406,7 @@ function renderLB(){
     s += "</div>";
     s += "<div class=lb-stat>";
     s += "<div class=num>" + e.totalMl + "</div>";
-    s += "<div class=lbl>ml</div>";
+    s += "<div class=lbl>" + (state.mode === "workout" ? "min" : "ml") + "</div>";
     s += "</div>";
     s += "</div>";
     return s;
@@ -409,7 +466,7 @@ function scheduleNext(){
   reminderTimer=setTimeout(function(){
     if(snoozeUntil&&Date.now()<snoozeUntil){scheduleNext();return}
     if(state.totalMl<state.goal&&state.profile){
-      var msg=randFrom(MSGS.remind);showMsg(msg);
+      var msg=randFrom(state.mode==="workout"?MSGS.workoutRemind:MSGS.remind);showMsg(msg);
       var pt=msg.t.replace(/<[^>]*>/g,"");
       showToast(msg.e+" "+pt);
       if("Notification"in window&&Notification.permission==="granted")new Notification("喝了么",{body:pt});
