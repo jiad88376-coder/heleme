@@ -460,7 +460,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="modal">
 
-<h2 id="modalTitle">⚙️</h2>
+<h2 id="modalTitle">⚙️ 设置</h2>
 
 <div id="modalBody">
 
@@ -502,8 +502,14 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <div class="m-actions">
 
+<div class="mode-workout" style="margin-top:12px;border-top:1px solid rgba(255,150,50,.15);padding-top:12px">
+<label style="color:rgba(255,150,50,.7)">💪 撸铁目标 (分钟)</label>
+<input type="number" id="workoutGoalInput" min="10" max="300" value="45">
+<label style="color:rgba(255,150,50,.7)">每组时长 (分钟)</label>
+<input type="number" id="sessionInput" min="5" max="120" value="15">
+</div>
+<div class="m-actions">
 <button class="btn btn-ghost" onclick="closeModal()">取消</button>
-
 <button class="btn btn-drink" onclick="saveSettings()">保存</button>
 
 </div>

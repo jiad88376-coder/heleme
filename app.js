@@ -81,28 +81,26 @@ function showWorkoutPicker(){
 }
 
 function logWorkout(minutes){
-  document.getElementById("workoutPicker").style.display="none";
-  document.getElementById("btnStartWorkout").style.display="block";
-  document.getElementById("workoutStats").style.display="flex";
-  document.getElementById("workoutProgress").style.display="block";
   if (!minutes || minutes <= 0) return;
   if (state.mode !== "workout") return;
-  state.totalMl += minutes;
-  state.count++;
-  state.logs.push({time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}),ml:minutes});
-  var td=getToday();state.weekData[td]=(state.weekData[td]||0)+minutes;
+  state.workoutTotal += minutes;
+  state.workoutSessions++;
+  if (!state.workoutLogs) state.workoutLogs = [];
+  state.workoutLogs.push({time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}),ml:minutes});
+  var td=getToday();
+  if (!state.workoutWeekData) state.workoutWeekData = {};
+  state.workoutWeekData[td]=(state.workoutWeekData[td]||0)+minutes;
+  state.workoutToday=td;
   saveState();render();
+  document.getElementById("workoutStats").style.display="flex";
+  document.getElementById("workoutProgress").style.display="block";
+  document.getElementById("workoutPicker").style.display="none";
+  document.getElementById("btnStartWorkout").style.display="block";
   showToast("💪 +"+minutes+"分钟");
-  document.getElementById("workoutTotal").textContent=Math.round(state.totalMl*10)/10;
-  document.getElementById("workoutSessions").textContent=state.count;
-  var wp = Math.min(Math.round(state.totalMl/state.goal*100),100);
-  document.getElementById("workoutProgressFill").style.width=wp+"%";
-  document.getElementById("workoutProgressText").textContent=Math.round(state.totalMl*10)/10+" / "+state.goal+" 分钟";
-  var gl = document.getElementById("gymLabel"); if(gl) gl.textContent=Math.round(state.totalMl*10)/10+"′";
   showMsg(randFrom(MSGS.praise));
   if (ws && ws.readyState === WebSocket.OPEN) {
     var p = state.profile || {};
-    ws.send(JSON.stringify({type:"workout",userId:state.userId,name:p.name||"锻炼达人",totalMin:state.totalMl,sessions:state.count}));
+    ws.send(JSON.stringify({type:"workout",userId:state.userId,name:p.name||"锻炼达人",totalMin:state.workoutTotal,sessions:state.workoutSessions}));
   }
 }
 
@@ -151,7 +149,7 @@ let audioCtx = null;
 function calcGoal(g,a){a=parseInt(a)||25;if(a<6)return 1200;if(a<13)return g==="male"?1500:1300;if(a<18)return g==="male"?2200:1800;if(a<60)return g==="male"?2500:2000;return g==="male"?2200:1800}
 
 function getDefaultState(){
-  return{version:4,mode:"water",goal:2000,cupSize:200,sessionMin:15,sound:"on",praiseMode:"on",remindMode:"smart",remindStart:"08:00",remindEnd:"22:00",today:getToday(),totalMl:0,count:0,logs:[],weekData:{},profile:null,userId:genId(),wsConnected:false}
+  return{version:5,mode:"water",profile:null,userId:genId(),sound:"on",praiseMode:"on",remindMode:"smart",remindStart:"08:00",remindEnd:"22:00",wsConnected:false,today:getToday(),goal:2000,cupSize:200,totalMl:0,count:0,logs:[],weekData:{},workoutGoal:45,workoutSessionMin:15,workoutTotal:0,workoutSessions:0,workoutLogs:[],workoutWeekData:{}}
 }
 function genId(){return"hlm_"+Math.random().toString(36).substr(2,12)+Date.now().toString(36)}
 function getToday(){return new Date().toISOString().slice(0,10)}
@@ -161,8 +159,13 @@ function loadState(){
     var r=localStorage.getItem(LS_KEY);
     if(r){
       var s=JSON.parse(r);var td=getToday();
+      // Water daily reset
       if(s.today!==td){if(s.today)s.weekData[s.today]=(s.weekData[s.today]||0)+s.totalMl;s.today=td;s.totalMl=0;s.count=0;s.logs=[]}
+      // Workout daily reset (separate)
+      if(!s.workoutToday)s.workoutToday=td;
+      if(s.workoutToday!==td){if(s.workoutToday)s.workoutWeekData[s.workoutToday]=(s.workoutWeekData[s.workoutToday]||0)+s.workoutTotal;s.workoutToday=td;s.workoutTotal=0;s.workoutSessions=0;s.workoutLogs=[]}
       if(!s.version){s.goal=2000;s.cupSize=200}
+      if(s.version<5){s.workoutGoal=s.workoutGoal||45;s.workoutSessionMin=s.workoutSessionMin||15;s.workoutTotal=s.workoutTotal||0;s.workoutSessions=s.workoutSessions||0;s.workoutLogs=s.workoutLogs||[];s.workoutWeekData=s.workoutWeekData||{};s.workoutToday=s.workoutToday||td}
       if(!s.userId)s.userId=genId();if(!s.sound)s.sound="on";if(s.praiseMode===undefined)s.praiseMode="on"
       if(!s.remindMode)s.remindMode="smart";if(!s.remindStart)s.remindStart="08:00";if(!s.remindEnd)s.remindEnd="22:00"
       return s
@@ -193,7 +196,7 @@ function playGulp(){
 
 function drink(ml){
   if(!ml||ml<=0)return;
-  if(state.mode==="workout"){logWorkout(Math.min(ml,60));return}
+  if(state.mode==="workout")return;
   if(snoozeUntil&&Date.now()<snoozeUntil){showToast("? 提醒暂停中");return}
   state.totalMl+=ml;state.count++;
   state.logs.push({time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}),ml:ml});
@@ -219,8 +222,8 @@ function switchMode(mode){
   } else {
     t.textContent = "撸了么";
     s.innerHTML = "今天你撸铁了吗？💪";
-    state.goal = state.goal > 200 ? state.goal : 45;
-    if (!state.sessionMin) state.sessionMin = 15;
+    if (!state.workoutGoal) state.workoutGoal = 45;
+    if (!state.workoutSessionMin) state.workoutSessionMin = 15;
   }
   if (mode === "workout") {
     var btn = document.getElementById("btnStartWorkout");
@@ -229,8 +232,8 @@ function switchMode(mode){
     var prog = document.getElementById("workoutProgress");
     if (btn) btn.style.display = "block";
     if (picker) picker.style.display = "none";
-    if (stats && state.totalMl > 0) stats.style.display = "flex";
-    if (prog && state.totalMl > 0) prog.style.display = "block";
+    if (stats && state.workoutTotal > 0) stats.style.display = "flex";
+    if (prog && state.workoutTotal > 0) prog.style.display = "block";
   }
   render();
   // Re-send join with correct app
@@ -346,9 +349,12 @@ function randFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
 
 function saveOnboard(){
   var g=document.getElementById("onboardGender").value,a=parseInt(document.getElementById("onboardAge").value)||25,n=document.getElementById("onboardName").value.trim()||(g==="male"?"水友♂":"水友♀");
-  var gl=calcGoal(g,a);state.profile={name:n,gender:g,age:a};state.goal=gl;saveState();render();
+  state.profile={name:n,gender:g,age:a};
+  state.goal=calcGoal(g,a);
+  state.workoutGoal=g==="male"?60:45;
+  saveState();render();
   document.getElementById("onboardOverlay").classList.remove("active");
-  showToast("✅ "+n+"，目标："+gl+"ml");startReminder()
+  showToast("✅ "+n+"，喝水目标："+state.goal+"ml 锻炼目标："+state.workoutGoal+"分钟");startReminder()
 }
 
 document.addEventListener("DOMContentLoaded",function(){
@@ -416,11 +422,13 @@ function showToast(msg){
 function openModal(mode){
   if(mode==="settings"){
     document.getElementById("goalInput").value=state.goal;document.getElementById("cupInput").value=state.cupSize;
+    document.getElementById("workoutGoalInput").value=state.workoutGoal||45;
+    document.getElementById("sessionInput").value=state.workoutSessionMin||15;
     document.getElementById("soundToggle").value=state.sound||"on";document.getElementById("praiseToggle").value=state.praiseMode||"on";document.getElementById("reminderMode").value=state.remindMode||"smart";
     document.getElementById("remindStart").value=state.remindStart||"08:00";document.getElementById("remindEnd").value=state.remindEnd||"22:00";
     document.getElementById("modalTitle").textContent="⚙️ 设置";document.getElementById("modalOverlay").classList.add("active")
   }else if(mode==="custom"){
-    document.getElementById("customAmount").value=state.mode==="workout"?state.sessionMin:state.cupSize;document.getElementById("customModalOverlay").classList.add("active");
+    document.getElementById("customAmount").value=state.mode==="workout"?state.workoutSessionMin:state.cupSize;document.getElementById("customModalOverlay").classList.add("active");
     setTimeout(function(){document.getElementById("customAmount").focus()},100)
   }else if(mode==="profile"){
     var p=state.profile||{};document.getElementById("profileNameInput").value=p.name||"";
@@ -439,7 +447,8 @@ function saveSettings(){
   state.goal=Math.max(100,Math.min(10000,parseInt(document.getElementById("goalInput").value)||2000));
   var sizeVal = parseInt(document.getElementById("cupInput").value)||200;
   state.cupSize=Math.max(50,Math.min(2000,sizeVal));
-  state.sessionMin=Math.max(5,Math.min(120,sizeVal));
+  state.workoutSessionMin=Math.max(5,Math.min(120,parseInt(document.getElementById("sessionInput").value)||15));
+  state.workoutGoal=Math.max(10,Math.min(300,parseInt(document.getElementById("workoutGoalInput").value)||45));
   state.sound=document.getElementById("soundToggle").value;state.praiseMode=document.getElementById("praiseToggle").value;state.remindMode=document.getElementById("reminderMode").value;
   state.remindStart=document.getElementById("remindStart").value||"08:00";state.remindEnd=document.getElementById("remindEnd").value||"22:00";
   saveState();render();startReminder();closeModal();showToast("? 保存")
@@ -447,7 +456,10 @@ function saveSettings(){
 
 function saveProfile(){
   var n=document.getElementById("profileNameInput").value.trim()||"水友",g=document.getElementById("profileGenderInput").value,a=parseInt(document.getElementById("profileAgeInput").value)||25;
-  var gl=calcGoal(g,a);state.profile={name:n,gender:g,age:a};state.goal=gl;saveState();render();closeProfileModal();showToast("? 目标："+gl+"ml")
+  state.profile={name:n,gender:g,age:a};
+  state.goal=calcGoal(g,a);
+  state.workoutGoal=g==="male"?60:45;
+  saveState();render();closeProfileModal();showToast("? 喝水："+state.goal+"ml 锻炼："+state.workoutGoal+"分钟")
 }
 
 function confirmCustomDrink(){var v=parseInt(document.getElementById("customAmount").value)||0;if(v<=0){showToast("? 无效数量");return}closeCustomModal();drink(v)}
