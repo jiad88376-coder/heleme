@@ -76,6 +76,7 @@ function updateWSStatus(){
 }
 
 function showWorkoutPicker(){
+  playWorkoutSound();
   document.getElementById("btnStartWorkout").style.display="none";
   document.getElementById("workoutPicker").style.display="block";
 }
@@ -217,6 +218,25 @@ function playGulp(){
     n.type="triangle";n.frequency.setValueAtTime(800,now+0.05);n.frequency.exponentialRampToValueAtTime(200,now+0.2);
     ng.gain.setValueAtTime(0.15,now+0.05);ng.gain.exponentialRampToValueAtTime(0.001,now+0.2);
     n.connect(ng);ng.connect(ctx.destination);n.start(now+0.05);n.stop(now+0.2)
+  }catch(e){}
+}
+
+
+function playWorkoutSound(){
+  if(state.sound==="off")return;
+  try{
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    var ctx=audioCtx,now=ctx.currentTime;
+    // Low thud - like a dumbbell hitting the ground
+    var o1=ctx.createOscillator(),g1=ctx.createGain();
+    o1.type="square";o1.frequency.setValueAtTime(80,now);o1.frequency.exponentialRampToValueAtTime(40,now+0.15);
+    g1.gain.setValueAtTime(0.4,now);g1.gain.exponentialRampToValueAtTime(0.001,now+0.2);
+    o1.connect(g1);g1.connect(ctx.destination);o1.start(now);o1.stop(now+0.2);
+    // High clap - like impact
+    var o2=ctx.createOscillator(),g2=ctx.createGain();
+    o2.type="sawtooth";o2.frequency.setValueAtTime(200,now+0.02);o2.frequency.exponentialRampToValueAtTime(60,now+0.1);
+    g2.gain.setValueAtTime(0.25,now+0.02);g2.gain.exponentialRampToValueAtTime(0.001,now+0.12);
+    o2.connect(g2);g2.connect(ctx.destination);o2.start(now+0.02);o2.stop(now+0.12);
   }catch(e){}
 }
 
@@ -561,12 +581,25 @@ function copyShareLink(){
 function closeShareModal(){document.getElementById("shareModalOverlay").classList.remove("active")}
 
 function clearToday(){
+  if(state.mode==="workout"){
+    if(!state.workoutLogs||!state.workoutLogs.length)return;
+    if(!confirm("确定清空撸铁记录？"))return;
+    var td=getToday();state.workoutTotal=0;state.workoutSessions=0;state.workoutLogs=[];state.workoutWeekData[td]=0;
+    saveState();render();showToast("🗑️ 撸铁已清空");showMsg(randFrom(MSGS.workoutRemind));
+    return;
+  }
   if(!state.logs.length)return;if(!confirm("确定清空？"))return;
   var td=getToday();state.totalMl=0;state.count=0;state.logs=[];state.weekData[td]=0;
   saveState();render();showToast("🗑️ 已清空");showMsg(randFrom(MSGS.remind))
 }
 
 function resetToday(){
+  if(state.mode==="workout"){
+    if(state.workoutTotal===0&&state.workoutSessions===0){showToast("今天还没撸铁");return}
+    if(!confirm("确定重置撸铁记录？"))return;
+    state.workoutTotal=0;state.workoutSessions=0;state.workoutLogs=[];saveState();render();showToast("🔄 撸铁已重置");showMsg(randFrom(MSGS.workoutRemind));
+    return;
+  }
   if(state.totalMl===0&&state.count===0){showToast("今天还没喝水");return}
   if(!confirm("确定重置？"))return;
   state.totalMl=0;state.count=0;state.logs=[];saveState();render();showToast("🔄 已重置");showMsg(randFrom(MSGS.remind))
