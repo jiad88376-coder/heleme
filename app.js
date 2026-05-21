@@ -75,7 +75,16 @@ function updateWSStatus(){
   el.textContent = wsConnected ? "🟢 已连接" : "🔴 未连接";
 }
 
+function showWorkoutPicker(){
+  document.getElementById("btnStartWorkout").style.display="none";
+  document.getElementById("workoutPicker").style.display="block";
+}
+
 function logWorkout(minutes){
+  document.getElementById("workoutPicker").style.display="none";
+  document.getElementById("btnStartWorkout").style.display="block";
+  document.getElementById("workoutStats").style.display="flex";
+  document.getElementById("workoutProgress").style.display="block";
   if (!minutes || minutes <= 0) return;
   if (state.mode !== "workout") return;
   state.totalMl += minutes;
@@ -84,6 +93,12 @@ function logWorkout(minutes){
   var td=getToday();state.weekData[td]=(state.weekData[td]||0)+minutes;
   saveState();render();
   showToast("💪 +"+minutes+"分钟");
+  document.getElementById("workoutTotal").textContent=Math.round(state.totalMl*10)/10;
+  document.getElementById("workoutSessions").textContent=state.count;
+  var wp = Math.min(Math.round(state.totalMl/state.goal*100),100);
+  document.getElementById("workoutProgressFill").style.width=wp+"%";
+  document.getElementById("workoutProgressText").textContent=Math.round(state.totalMl*10)/10+" / "+state.goal+" 分钟";
+  var gl = document.getElementById("gymLabel"); if(gl) gl.textContent=Math.round(state.totalMl*10)/10+"′";
   showMsg(randFrom(MSGS.praise));
   if (ws && ws.readyState === WebSocket.OPEN) {
     var p = state.profile || {};
@@ -206,6 +221,16 @@ function switchMode(mode){
     s.innerHTML = "今天你撸铁了吗？💪";
     state.goal = state.goal > 200 ? state.goal : 45;
     if (!state.sessionMin) state.sessionMin = 15;
+  }
+  if (mode === "workout") {
+    var btn = document.getElementById("btnStartWorkout");
+    var picker = document.getElementById("workoutPicker");
+    var stats = document.getElementById("workoutStats");
+    var prog = document.getElementById("workoutProgress");
+    if (btn) btn.style.display = "block";
+    if (picker) picker.style.display = "none";
+    if (stats && state.totalMl > 0) stats.style.display = "flex";
+    if (prog && state.totalMl > 0) prog.style.display = "block";
   }
   render();
   // Re-send join with correct app

@@ -264,11 +264,45 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 </div></div>
 
-<div class="mode-workout"><div class="gym-container" style="display:flex;justify-content:center;margin:16px 0">
-<div class="gym-ring" style="width:120px;height:200px;border:4px solid rgba(255,150,50,.5);border-top:none;border-radius:0 0 20px 20px;position:relative;background:rgba(80,20,0,.2);overflow:hidden;box-shadow:0 0 30px rgba(255,100,0,.15),inset 0 0 20px rgba(180,60,0,.1);cursor:pointer;transition:transform .3s,box-shadow .3s">
+<div class="mode-workout">
+<!-- Gym ring -->
+<div class="gym-container" style="display:flex;justify-content:center;margin:16px 0">
+<div class="gym-ring" style="width:120px;height:200px;border:4px solid rgba(255,150,50,.5);border-top:none;border-radius:0 0 20px 20px;position:relative;background:rgba(80,20,0,.2);overflow:hidden;box-shadow:0 0 30px rgba(255,100,0,.15),inset 0 0 20px rgba(180,60,0,.1)">
 <div class="gym-fill" id="gymFill" style="position:absolute;bottom:0;left:0;right:0;height:0%;background:linear-gradient(180deg,rgba(255,150,0,.6),rgba(200,80,0,.8));transition:height 1s cubic-bezier(.4,0,.2,1);border-radius:0 0 16px 16px"></div>
-<div class="gym-label" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.8rem;font-weight:700;color:rgba(255,255,255,.3);pointer-events:none;z-index:2">💪</div>
-</div></div></div>
+<div class="gym-label" id="gymLabel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.8rem;font-weight:700;color:rgba(255,255,255,.3);pointer-events:none;z-index:2">💪</div>
+</div>
+</div>
+
+<!-- Stats (hidden initially, shown after first workout) -->
+<div class="stats" id="workoutStats" style="display:none;gap:10px;margin:16px 0">
+<div class="stat-card"><div class="num" id="workoutTotal">0</div><div class="label">今日训练(分钟)</div></div>
+<div class="stat-card"><div class="num" id="workoutSessions">0</div><div class="label">训练次数</div></div>
+</div>
+
+<!-- 立即开撸 button -->
+<button id="btnStartWorkout" onclick="showWorkoutPicker()" style="width:100%;padding:16px 0;border:none;border-radius:16px;font-size:1.2rem;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#cc5500,#ff6a00);color:#fff;box-shadow:0 4px 20px rgba(255,100,0,.4);letter-spacing:4px;transition:all .2s">💪 立即开撸</button>
+
+<!-- Duration picker (hidden initially) -->
+<div id="workoutPicker" style="display:none;margin-top:16px">
+<div style="text-align:center;margin-bottom:10px;font-size:.85rem;color:rgba(255,150,50,.7);font-weight:600">🔥 选择锻炼时长</div>
+<div class="duration-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+<button onclick="logWorkout(30)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#cc5500,#ff6a00);color:#fff;transition:all .2s">30 分</button>
+<button onclick="logWorkout(15)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">15 分</button>
+<button onclick="logWorkout(10)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">10 分</button>
+<button onclick="logWorkout(5)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">5 分</button>
+<button onclick="logWorkout(3)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">3 分</button>
+<button onclick="logWorkout(2)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">2 分</button>
+<button onclick="logWorkout(1)" style="padding:14px 0;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">1 分</button>
+<button onclick="logWorkout(0.5)" style="padding:14px 0;border:none;border-radius:12px;font-size:.85rem;font-weight:600;cursor:pointer;background:rgba(255,150,50,.1);color:rgba(255,180,100,.6);border:1px solid rgba(255,150,50,.1);transition:all .2s">30s</button>
+</div>
+</div>
+
+<!-- Progress bar -->
+<div id="workoutProgress" style="display:none;margin-top:16px">
+<div class="progress-header"><span>进度</span><span id="workoutProgressText">0 / 45 分钟</span></div>
+<div class="progress-bar"><div class="progress-fill" id="workoutProgressFill" style="background:linear-gradient(90deg,#cc5500,#ff6a00)"></div></div>
+</div>
+</div>
 
 <div class="stats">
 
@@ -306,21 +340,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 </div>
 </div>
 
-<div class="mode-workout">
-<div style="margin:16px 0">
-<div style="text-align:center;margin-bottom:10px;font-size:.85rem;color:rgba(255,150,50,.7);font-weight:600">💪 选择锻炼时长</div>
-<div class="duration-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-<button class="btn-duration" data-min="30" onclick="logWorkout(30)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#cc5500,#ff6a00);color:#fff;transition:all .2s">30 分</button>
-<button class="btn-duration" data-min="15" onclick="logWorkout(15)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">15 分</button>
-<button class="btn-duration" data-min="10" onclick="logWorkout(10)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">10 分</button>
-<button class="btn-duration" data-min="5" onclick="logWorkout(5)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">5 分</button>
-<button class="btn-duration" data-min="3" onclick="logWorkout(3)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">3 分</button>
-<button class="btn-duration" data-min="2" onclick="logWorkout(2)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">2 分</button>
-<button class="btn-duration" data-min="1" onclick="logWorkout(1)" style="padding:12px 0;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;background:rgba(255,150,50,.15);color:rgba(255,180,100,.9);border:1px solid rgba(255,150,50,.2);transition:all .2s">1 分</button>
-<button class="btn-duration" data-min="0.5" onclick="logWorkout(0.5)" style="padding:12px 0;border:none;border-radius:12px;font-size:.85rem;font-weight:600;cursor:pointer;background:rgba(255,150,50,.1);color:rgba(255,180,100,.6);border:1px solid rgba(255,150,50,.1);transition:all .2s">30s</button>
-</div>
-</div>
-</div>
+
 
 <div class="msg-box" id="msgBox">
 
