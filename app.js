@@ -1,5 +1,5 @@
-const APP_URL = location.href;
-const WS_PROTO = location.protocol === "https:" ? "wss:" : "ws:"; const WS_URL = WS_PROTO + "//" + location.host;
+﻿const APP_URL = location.href;
+const WS_URL = "wss://heleme-server-qjum-production.up.railway.app";
 const LS_KEY = "heleme_v2";
 
 // WebSocket
